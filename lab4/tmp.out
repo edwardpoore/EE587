@@ -1,0 +1,15 @@
+
+BL51 BANKED LINKER/LOCATER V6.22 - SN: Eval Version
+COPYRIGHT KEIL ELEKTRONIK GmbH 1987 - 2009
+"C:\Users\Danny\Desktop\lab3\main3.obj",
+"C:\Users\Danny\Desktop\lab3\init3.obj"  TO "C:\Users\Danny\Desktop\lab3\init3" RS(256) PL(68) PW(78) 
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 04C5H BYTE (59%) *
+******************************************************************************
+
+>> 
+>> 
+>> 
+Program Size: data=53.1 xdata=0 code=3380
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

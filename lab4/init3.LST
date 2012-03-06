@@ -1,0 +1,168 @@
+C51 COMPILER V9.05   INIT3                                                                 03/05/2012 11:45:35 PAGE 1   
+
+
+C51 COMPILER V9.05, COMPILATION OF MODULE INIT3
+OBJECT MODULE PLACED IN init3.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\c51.exe init3.c DB OE BR INCDIR(C:\SiLabs\MCU\Inc)
+
+line level    source
+
+   1          //-----------------------------------------------------------------------------
+   2          // init3.c
+   3          //-----------------------------------------------------------------------------
+   4          // Initialization Routines for EE587 Experiment #3.
+   5          //
+   6          // Author: James E. Lumpp
+   7          // Date: 2/21/02
+   8          // Target: 8051F020
+   9          // Assignment: Experiment #3
+  10          //
+  11          #include <c8051f020.h>                 // SFR declarations
+  12          
+  13          
+  14          
+  15          //-----------------------------------------------------------------------------
+  16          // Global CONSTANTS
+  17          //-----------------------------------------------------------------------------
+  18          
+  19          #define SYSCLK       22118400          // SYSCLK frequency in Hz
+  20          //#define SYSCLK       400000
+  21          
+  22          #define BAUDRATE     9600              // Baud rate of UART in bps
+  23          // 16-bit SFR declarations
+  24          sfr16    TMR3RL   = 0x92;              // Timer3 reload registers
+  25          sfr16    TMR3     = 0x94;              // Timer3 counter registers
+  26          
+  27          #define  SMB_FREQUENCY  200000L         // Target SCL clock rate
+  28                                                 // This example supports between 10kHz
+  29                                                 // and 100kHz
+  30          #define  EEPROM_ADDR    0xA0           // Device address for slave target
+  31                                                 // Note: This address is specified
+  32                                                 // in the Microchip 24LC02B
+  33                                                 // datasheet.
+  34          
+  35          #define  MY_ADDR        0x00           // Address of this SMBus device
+  36                                                 // (dummy value since this device does
+  37                                                 // not have any defined slave states)
+  38          
+  39          
+  40          
+  41          
+  42          //-----------------------------------------------------------------------------
+  43          // SYSCLK_Init
+  44          //-----------------------------------------------------------------------------
+  45          //
+  46          // This routine initializes the system clock to use an 22.1184MHz crystal
+  47          // as its clock source.
+  48          //
+  49          void SYSCLK_Init (void)
+  50          {
+  51   1         int i;                              // delay counter
+  52   1      
+  53   1         OSCXCN = 0x67;                      // start external oscillator with
+  54   1                                             // 22.1184MHz crystal
+  55   1      
+C51 COMPILER V9.05   INIT3                                                                 03/05/2012 11:45:35 PAGE 2   
+
+  56   1         for (i=0; i < 3000; i++) ;           // XTLVLD blanking interval (>1ms)
+  57   1      
+  58   1         while (!(OSCXCN & 0x80)) ;          // Wait for crystal osc. to settle
+  59   1      
+  60   1         OSCICN = 0x08;                      // select external oscillator as SYSCLK
+  61   1                                             // source and enable missing clock
+  62   1                                             // detector
+  63   1      }
+  64          
+  65          //-----------------------------------------------------------------------------
+  66          // PORT_Init
+  67          //-----------------------------------------------------------------------------
+  68          //
+  69          // Configure the Crossbar and GPIO ports
+  70          //
+  71          void PORT_Init (void)
+  72          {
+  73   1         XBR0    = 0x05;                     // Enable UART0 and SMBUS
+  74   1         XBR1    = 0x80;
+  75   1         
+  76   1         XBR2    = 0xC0;                     // Enable crossbar and weak pull-ups
+  77   1      
+  78   1      }
+  79          
+  80          //-----------------------------------------------------------------------------
+  81          // UART0_Init
+  82          //-----------------------------------------------------------------------------
+  83          //
+  84          // Configure the UART0 using Timer1, for <baudrate> and 8-N-1.
+  85          //
+  86          void UART0_Init (void)
+  87          {
+  88   1         SCON0   = 0x50;                     // SCON0: mode 1, 8-bit UART, enable RX
+  89   1         TMOD    = 0x20;                     // TMOD: timer 1, mode 2, 8-bit reload
+  90   1         TH1    = -(SYSCLK/BAUDRATE/16);     // set Timer1 reload value for baudrate
+  91   1         TR1    = 1;                         // start Timer1
+  92   1         CKCON |= 0x10;                      // Timer1 uses SYSCLK as time base
+  93   1         PCON  |= 0x80;                      // SMOD00 = 1
+  94   1         TI0    = 1;                         // Indicate TX0 ready
+  95   1      }
+  96          
+  97          //-----------------------------------------------------------------------------
+  98          // SMBus_Init
+  99          //-----------------------------------------------------------------------------
+ 100          //
+ 101          // Return Value : None
+ 102          // Parameters   : None
+ 103          //
+ 104          // The SMBus peripheral is configured as follows:
+ 105          // - SMBus enabled
+ 106          // - Assert Acknowledge low (AA bit = 1b)
+ 107          // - Free and SCL low timeout detection enabled
+ 108          //
+ 109          void SMBus_Init (void)
+ 110          {
+ 111   1           SMB0CN = 0x41;
+ 112   1           SMB0CR = 0xD0;
+ 113   1      }
+ 114          //-----------------------------------------------------------------------------
+ 115          // Timer3_Init
+ 116          //-----------------------------------------------------------------------------
+ 117          //
+C51 COMPILER V9.05   INIT3                                                                 03/05/2012 11:45:35 PAGE 3   
+
+ 118          // Return Value : None
+ 119          // Parameters   : None
+ 120          //
+ 121          // Timer3 configured for use by the SMBus low timeout detect feature as
+ 122          // follows:
+ 123          // - SYSCLK/12 as Timer3 clock source
+ 124          // - Timer3 reload registers loaded for a 25ms overflow period
+ 125          // - Timer3 pre-loaded to overflow after 25ms
+ 126          // - Timer3 enabled
+ 127          //
+ 128          void Timer3_Init (void)
+ 129          {
+ 130   1         TMR3CN = 0x02;                      // Timer3 uses SYSCLK/12
+ 131   1      
+ 132   1         TMR3RL =  0xAF;           // Timer3 configured to overflow after
+ 133   1         TMR3RLH = 0xFD;
+ 134   1         EIE2 |=   0x01;                       // Timer3 interrupt enable
+ 135   1         TMR3CN |= 0x02;                     // Start Timer3
+ 136   1      }
+ 137          void Interrupts_Init(void)
+ 138          {
+ 139   1         EIE1      = 0x02;    
+ 140   1      
+ 141   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     86    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

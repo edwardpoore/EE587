@@ -1,0 +1,2 @@
+"C:\Users\Danny\Desktop\lab3\main3.obj",
+"C:\Users\Danny\Desktop\lab3\init3.obj"  TO "C:\Users\Danny\Desktop\lab3\init3" RS(256) PL(68) PW(78) 

@@ -1,0 +1,120 @@
+C51 COMPILER V9.05   INIT35                                                                03/05/2012 11:44:13 PAGE 1   
+
+
+C51 COMPILER V9.05, COMPILATION OF MODULE INIT35
+OBJECT MODULE PLACED IN init35.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\c51.exe init35.c DB OE BR INCDIR(C:\SiLabs\MCU\Inc)
+
+line level    source
+
+   1          /////////////////////////////////////
+   2          //  Generated Initialization File  //
+   3          /////////////////////////////////////
+   4          
+   5          #include <c8051f020.h>                 // SFR declarations
+   6          
+   7          
+   8          // Peripheral specific initialization functions,
+   9          // Called from the Init_Device() function
+  10          void Timer_Init()
+  11          {
+  12   1          CKCON     = 0x10;
+  13   1          TMOD      = 0x20;
+  14   1          TH1       = 0xF3;
+  15   1          TMR3CN    = 0x04;
+  16   1          TMR3RLL   = 0x72;
+  17   1          TMR3RLH   = 0xDF;
+  18   1      }
+  19          
+  20          void UART_Init()
+  21          {
+  22   1          SCON0     = 0x50;
+  23   1      }
+  24          
+  25          void SMBus_Init()
+  26          {
+  27   1          SMB0CN    = 0x41;
+  28   1          SMB0CR    = 0xEE;
+  29   1      }
+  30          
+  31          void Port_Init()
+  32          {
+  33   1          // P0.0  -  TX0 (UART0), Open-Drain, Digital
+  34   1          // P0.1  -  RX0 (UART0), Open-Drain, Digital
+  35   1          // P0.2  -  SDA (SMBus), Open-Drain, Digital
+  36   1          // P0.3  -  SCL (SMBus), Open-Drain, Digital
+  37   1          // P0.4  -  SYSCLK,      Open-Drain, Digital
+  38   1          // P0.5  -  Unassigned,  Open-Drain, Digital
+  39   1          // P0.6  -  Unassigned,  Open-Drain, Digital
+  40   1          // P0.7  -  Unassigned,  Open-Drain, Digital
+  41   1      
+  42   1          // P1.0  -  Unassigned,  Open-Drain, Digital
+  43   1          // P1.1  -  Unassigned,  Open-Drain, Digital
+  44   1          // P1.2  -  Unassigned,  Open-Drain, Digital
+  45   1          // P1.3  -  Unassigned,  Open-Drain, Digital
+  46   1          // P1.4  -  Unassigned,  Open-Drain, Digital
+  47   1          // P1.5  -  Unassigned,  Open-Drain, Digital
+  48   1          // P1.6  -  Unassigned,  Open-Drain, Digital
+  49   1          // P1.7  -  Unassigned,  Open-Drain, Digital
+  50   1      
+  51   1          // P2.0  -  Unassigned,  Open-Drain, Digital
+  52   1          // P2.1  -  Unassigned,  Open-Drain, Digital
+  53   1          // P2.2  -  Unassigned,  Open-Drain, Digital
+  54   1          // P2.3  -  Unassigned,  Open-Drain, Digital
+  55   1          // P2.4  -  Unassigned,  Open-Drain, Digital
+C51 COMPILER V9.05   INIT35                                                                03/05/2012 11:44:13 PAGE 2   
+
+  56   1          // P2.5  -  Unassigned,  Open-Drain, Digital
+  57   1          // P2.6  -  Unassigned,  Open-Drain, Digital
+  58   1          // P2.7  -  Unassigned,  Open-Drain, Digital
+  59   1      
+  60   1          // P3.0  -  Unassigned,  Open-Drain, Digital
+  61   1          // P3.1  -  Unassigned,  Open-Drain, Digital
+  62   1          // P3.2  -  Unassigned,  Open-Drain, Digital
+  63   1          // P3.3  -  Unassigned,  Open-Drain, Digital
+  64   1          // P3.4  -  Unassigned,  Open-Drain, Digital
+  65   1          // P3.5  -  Unassigned,  Open-Drain, Digital
+  66   1          // P3.6  -  Unassigned,  Open-Drain, Digital
+  67   1          // P3.7  -  Unassigned,  Open-Drain, Digital
+  68   1      
+  69   1          XBR0      = 0x05;
+  70   1          XBR1      = 0x80;
+  71   1          XBR2      = 0x40;
+  72   1      }
+  73          
+  74          void Oscillator_Init()
+  75          {
+  76   1          OSCICN    = 0x05;
+  77   1      }
+  78          
+  79          void Interrupts_Init()
+  80          {
+  81   1          EIE1      = 0x02;
+  82   1          EIE2      = 0x01;
+  83   1      }
+  84          
+  85          // Initialization function for device,
+  86          // Call Init_Device() from your main program
+  87          void Init_Device(void)
+  88          {
+  89   1          Timer_Init();
+  90   1          UART_Init();
+  91   1          SMBus_Init();
+  92   1          Port_Init();
+  93   1          Oscillator_Init();
+  94   1          Interrupts_Init();
+  95   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     69    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

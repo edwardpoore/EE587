@@ -1,0 +1,690 @@
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 1   
+
+
+C51 COMPILER V9.05, COMPILATION OF MODULE MAIN3
+OBJECT MODULE PLACED IN main3.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\c51.exe main3.c DB OE BR INCDIR(C:\SiLabs\MCU\Inc)
+
+line level    source
+
+   1          //-----------------------------------------------------------------------------
+   2          // main3.c
+   3          //-----------------------------------------------------------------------------
+   4          // Main program for EE599 Experiment #4
+   5          //
+   6          // Author: James E. Lumpp
+   7          // Date: 2/21/02
+   8          // Target:  8051F020
+   9          // Assignment: Experiment #4
+  10          //
+  11          
+  12          //-----------------------------------------------------------------------------
+  13          // Includes
+  14          //-----------------------------------------------------------------------------
+  15          #include <compiler_defs.h>
+  16          #include <C8051F020_defs.h>                 // SFR declarations
+  17          #include <stdio.h>
+  18          
+  19          //#include "16sfrs.h"                    // 16 bit SFRs
+  20          
+  21          #include "init3.h"                    // defines for the init functions
+  22          
+  23          //-----------------------------------------------------------------------------
+  24          // Global CONSTANTS
+  25          //-----------------------------------------------------------------------------
+  26          
+  27          
+  28          #define  EEPROM_SIZE 20
+  29          
+  30          #define  SMB_FREQUENCY  400000L        // Target SCL clock rate
+  31                                                 // This example supports between 10kHz
+  32                                                 // and 100kHz
+  33          
+  34          #define  WRITE          0x00           // WRITE direction bit
+  35          #define  READ           0x01           // READ direction bit
+  36          
+  37          // Device addresses (7 bits, lsb is a don't care)
+  38          #define  EEPROM_ADDR    0xA0           // Device address for slave target
+  39                                                 // Note: This address is specified
+  40                                                 // in the Microchip 24LC02B
+  41                                                 // datasheet.
+  42          
+  43          #define  MY_ADDR        0x00           // Address of this SMBus device
+  44                                                 // (dummy value since this device does
+  45                                                 // not have any defined slave states)
+  46          
+  47          // SMBus Buffer Size
+  48          #define  SMB_BUFF_SIZE  0x08           // Defines the maximum number of bytes
+  49                                                 // that can be sent or received in a
+  50                                                 // single transfer
+  51          
+  52          #define  SMB_BUS_ERROR  0x00           // (all modes) BUS ERROR
+  53          #define  SMB_START      0x08           // (MT & MR) START transmitted
+  54          #define  SMB_RP_START   0x10           // (MT & MR) repeated START
+  55          #define  SMB_MTADDACK   0x18           // (MT) Slave address + W transmitted;
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 2   
+
+  56                                                 //    ACK received
+  57          #define  SMB_MTADDNACK  0x20           // (MT) Slave address + W transmitted;
+  58                                                 //    NACK received
+  59          #define  SMB_MTDBACK    0x28           // (MT) data byte transmitted;
+  60                                                 //    ACK rec'vd
+  61          #define  SMB_MTDBNACK   0x30           // (MT) data byte transmitted;
+  62                                                 //    NACK rec'vd
+  63          #define  SMB_MTARBLOST  0x38           // (MT) arbitration lost
+  64          #define  SMB_MRADDACK   0x40           // (MR) Slave address + R transmitted;
+  65                                                 //    ACK received
+  66          #define  SMB_MRADDNACK  0x48           // (MR) Slave address + R transmitted;
+  67                                                 //    NACK received
+  68          #define  SMB_MRDBACK    0x50           // (MR) data byte rec'vd;
+  69                                                 //    ACK transmitted
+  70          #define  SMB_MRDBNACK   0x58           // (MR) data byte rec'vd;
+  71                                                 //    NACK transmitted
+  72          
+  73          //-----------------------------------------------------------------------------
+  74          // Global VARIABLES
+  75          //-----------------------------------------------------------------------------
+  76          
+  77          unsigned char* pSMB_DATA_IN;           // Global pointer for SMBus data
+  78                                                 // All receive data is written here
+  79          
+  80          unsigned char SMB_SINGLEBYTE_OUT;      // Global holder for single byte writes.
+  81          
+  82          unsigned char* pSMB_DATA_OUT;          // Global pointer for SMBus data.
+  83                                                 // All transmit data is read from here
+  84          
+  85          unsigned char SMB_DATA_LEN;            // Global holder for number of bytes
+  86                                                 // to send or receive in the current
+  87                                                 // SMBus transfer.
+  88          
+  89          unsigned char WORD_ADDR;               // Global holder for the EEPROM word
+  90                                                 // address that will be accessed in
+  91                                                 // the next transfer
+  92          
+  93          unsigned char TARGET;                  // Target SMBus slave address
+  94          
+  95          bit SMB_BUSY = 0;                      // Software flag to indicate when the
+  96                                                 // EEPROM_ByteRead() or
+  97                                                 // EEPROM_ByteWrite()
+  98                                                 // functions have claimed the SMBus
+  99          
+ 100          bit SMB_RW;                            // Software flag to indicate the
+ 101                                                 // direction of the current transfer
+ 102          
+ 103          bit SMB_SENDWORDADDR;                  // When set, this flag causes the ISR
+ 104                                                 // to send the 8-bit <WORD_ADDR>
+ 105                                                 // after sending the slave address.
+ 106          
+ 107          bit SMB_RANDOMREAD;                    // When set, this flag causes the ISR
+ 108                                                 // to send a START signal after sending
+ 109                                                 // the word address.
+ 110                                                 // For the 24LC02B EEPROM, a random read
+ 111                                                 // (a read from a particular address in
+ 112                                                 // memory) starts as a write then
+ 113                                                 // changes to a read after the repeated
+ 114                                                 // start is sent. The ISR handles this
+ 115                                                 // switchover if the <SMB_RANDOMREAD>
+ 116                                                 // bit is set.
+ 117          
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 3   
+
+ 118          bit SMB_ACKPOLL;                       // When set, this flag causes the ISR
+ 119                                                 // to send a repeated START until the
+ 120                                                 // slave has acknowledged its address
+ 121          
+ 122          // 16-bit SFR declarations
+ 123          //sfr16    TMR3RL   = 0x92;              // Timer3 reload registers
+ 124          //sfr16    TMR3     = 0x94;              // Timer3 counter registers
+ 125          
+ 126          
+ 127          //-----------------------------------------------------------------------------
+ 128          // Function PROTOTYPES
+ 129          //-----------------------------------------------------------------------------
+ 130          void dump_eeprom(void); 
+ 131          void block_fill(void); 
+ 132          void read_eeprom(void); 
+ 133          void write_eeprom(void); 
+ 134          
+ 135          void SMBus_ISR(void);
+ 136          void Timer3_ISR(void);
+ 137          
+ 138          
+ 139          unsigned char read_byte(unsigned char);
+ 140          void write_byte(unsigned char, unsigned char);
+ 141          
+ 142          
+ 143          //-----------------------------------------------------------------------------
+ 144          // MAIN Routine
+ 145          //-----------------------------------------------------------------------------
+ 146          
+ 147          void main (void) 
+ 148          {
+ 149   1          char keypress;
+ 150   1         //unsigned int i;
+ 151   1         
+ 152   1         WDTCN = 0xde;                       // disable watchdog timer
+ 153   1         WDTCN = 0xad;
+ 154   1      
+ 155   1         SYSCLK_Init ();                     // initialize oscillator
+ 156   1      
+ 157   1          /*
+ 158   1            while(!SDA)
+ 159   1         {
+ 160   1            // Provide clock pulses to allow the slave to advance out
+ 161   1            // of its current state. This will allow it to release SDA.
+ 162   1            XBR1 = 0x40;                     // Enable Crossbar
+ 163   1            SCL = 0;                         // Drive the clock low
+ 164   1            for(i = 0; i < 255; i++);        // Hold the clock low
+ 165   1            SCL = 1;                         // Release the clock
+ 166   1            while(!SCL);                     // Wait for open-drain
+ 167   1                                             // clock output to rise
+ 168   1            for(i = 0; i < 10; i++);         // Hold the clock high
+ 169   1            XBR1 = 0x00;                     // Disable Crossbar
+ 170   1         }
+ 171   1         */
+ 172   1         PORT_Init ();                       // initialize crossbar and GPIO
+ 173   1         UART0_Init ();                      // initialize UART0
+ 174   1      
+ 175   1         SMBus_Init();
+ 176   1         Timer3_Init();
+ 177   1         Interrupts_Init();
+ 178   1      
+ 179   1         SI = 0;
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 4   
+
+ 180   1      
+ 181   1      
+ 182   1         printf ("EE587 Experiment #3\n");
+ 183   1         printf ("Initialization Complete...\n");
+ 184   1        
+ 185   1         while (1) {
+ 186   2      
+ 187   2             printf("what would you like to do? (d,b,r,w):");
+ 188   2          
+ 189   2             keypress = getchar();
+ 190   2      
+ 191   2             printf("\n");
+ 192   2      
+ 193   2          
+ 194   2             switch(keypress) {
+ 195   3                 case 'd': dump_eeprom(); break;
+ 196   3                 case 'b': block_fill(); break;
+ 197   3                 case 'r': read_eeprom(); break;
+ 198   3                 case 'w': write_eeprom(); break;
+ 199   3                 case ' ':;
+ 200   3                 default:
+ 201   3                     printf("Invalid Command '%c'\n",keypress);
+ 202   3                     break;
+ 203   3             }
+ 204   2          
+ 205   2          
+ 206   2          
+ 207   2          }  // while(1)
+ 208   1          
+ 209   1      }  // main
+ 210          //////////////////////////////////////////////////////////////
+ 211          /// dump_eeprom
+ 212          //////////////////////////////////////////////////////////////
+ 213          void dump_eeprom()   // dump the contents of the eeprom
+ 214          {
+ 215   1          unsigned char i;
+ 216   1      
+ 217   1          printf("EEPROM contents are:\n");
+ 218   1          for(i=0;i<EEPROM_SIZE;i++) {
+ 219   2              printf("%bx ",read_byte(i));
+ 220   2          }
+ 221   1          printf("\n");
+ 222   1      }  // dump_eeprom();
+ 223          //////////////////////////////////////////////////////////////
+ 224          /// block_fill
+ 225          //////////////////////////////////////////////////////////////
+ 226          void block_fill()    // block fill the eeprom
+ 227          {
+ 228   1          unsigned char i;
+ 229   1          unsigned int data_in;
+ 230   1      
+ 231   1          printf("EEPROM block fill...\n");
+ 232   1      
+ 233   1          for(i=0;i<EEPROM_SIZE;i++) {
+ 234   2              printf("eeprom(%bx):",i);
+ 235   2              scanf("%x", &data_in);
+ 236   2              write_byte(i,(unsigned char)data_in);
+ 237   2              printf("\n");
+ 238   2          }
+ 239   1      }  // block_fill();
+ 240          //////////////////////////////////////////////////////////////
+ 241          /// read_eeprom
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 5   
+
+ 242          //////////////////////////////////////////////////////////////
+ 243          void read_eeprom()   // read a byte from the eeprom
+ 244          {
+ 245   1      int address;
+ 246   1      
+ 247   1        printf("address to read?:");
+ 248   1        scanf("%x",&address);  // this is a very poor/dangerous use of scanf. if the 
+ 249   1                              // user input does not match, you are toast.  not to
+ 250   1                              // mention the fact we are ignoring the return code
+ 251   1                              // (do as i say, not as i do)
+ 252   1        printf("\n");
+ 253   1      
+ 254   1        if(address < 0 || address > EEPROM_SIZE-1) {
+ 255   2           printf("Bad Address (Ignored)\n");
+ 256   2        } else {
+ 257   2          printf("Byte @ %bx is %bx\n",(unsigned char)address,read_byte((unsigned char)address));
+ 258   2        }
+ 259   1      }  // read_eeprom();
+ 260          //////////////////////////////////////////////////////////////
+ 261          /// write_eeprom
+ 262          //////////////////////////////////////////////////////////////
+ 263          void write_eeprom()  // write a byte to the eeprom
+ 264          {
+ 265   1      unsigned int address;
+ 266   1      unsigned char databyte;
+ 267   1      
+ 268   1        printf("address to write?:");
+ 269   1        scanf("%x",&address);  // this is a very poor/dangerous use of scanf. if the 
+ 270   1                              // user input does not match, you are toast.  not to
+ 271   1                              // mention the fact we are ignoring the return code
+ 272   1                              // (do as i say, not as i do)
+ 273   1        printf("\n");
+ 274   1      
+ 275   1        if(address < 0 || address > 29) {
+ 276   2           printf("Bad Address (Ignored)\n");
+ 277   2        } else {
+ 278   2          printf("value to write?:");
+ 279   2          scanf("%bx",&databyte);          // don't do this in your programs
+ 280   2          write_byte((unsigned char) address, databyte);
+ 281   2        }
+ 282   1      }  // write_eeprom();
+ 283          
+ 284          //-----------------------------------------------------------------------------
+ 285          // Interrupt Service Routines
+ 286          //-----------------------------------------------------------------------------
+ 287          
+ 288          //-----------------------------------------------------------------------------
+ 289          // SMBus Interrupt Service Routine (ISR)
+ 290          //-----------------------------------------------------------------------------
+ 291          //
+ 292          // SMBus ISR state machine
+ 293          // - Master only implementation - no slave states defined
+ 294          // - All incoming data is written starting at the global pointer <pSMB_DATA_IN>
+ 295          // - All outgoing data is read from the global pointer <pSMB_DATA_OUT>
+ 296          //
+ 297          void SMBUS_ISR (void) interrupt 7
+ 298          {
+ 299   1         bit FAIL = 0;                       // Used by the ISR to flag failed
+ 300   1                                             // transfers
+ 301   1      
+ 302   1         static char i;                      // Used by the ISR to count the
+ 303   1                                             // number of data bytes sent or
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 6   
+
+ 304   1                                             // received
+ 305   1      
+ 306   1         static bit SEND_START = 0;          // Send a start
+ 307   1      
+ 308   1         // Status code for the SMBus (SMB0STA register)
+ 309   1         switch (SMB0STA)
+ 310   1         {
+ 311   2            // Master Transmitter/Receiver: START condition transmitted.
+ 312   2            // Load SMB0DAT with slave device (EEPROM) address.
+ 313   2            case SMB_START:
+ 314   2               SMB0DAT = TARGET;             // Load address of the slave.
+ 315   2               SMB0DAT &= 0xFE;              // Clear the LSB of the address for the
+ 316   2                                             // R/W bit
+ 317   2               SMB0DAT |= SMB_RW;            // Load R/W bit
+ 318   2               STA = 0;                      // Manually clear STA bit
+ 319   2               i = 0;                        // Reset data byte counter
+ 320   2      
+ 321   2               break;
+ 322   2      
+ 323   2            // Master Transmitter/Receiver: Repeated START condition transmitted.
+ 324   2            // For a READ: This state only occurs during an EEPROM read operation
+ 325   2            //  for the EEPROM's "random read", where a write operation with the
+ 326   2            //  data address must be done before the read operation.
+ 327   2            //
+ 328   2            // For a WRITE: N/A
+ 329   2            case SMB_RP_START:
+ 330   2               SMB0DAT = TARGET;             // Load address of the slave.
+ 331   2               SMB0DAT |= SMB_RW;            // Load R/W bit
+ 332   2               STA = 0;                      // Manually clear START bit.
+ 333   2               i = 0;                        // Reset data byte counter
+ 334   2      
+ 335   2               break;
+ 336   2      
+ 337   2            // Master Transmitter: Slave address + WRITE transmitted.  ACK received.
+ 338   2            // For a READ or WRITE: the word (data) address in the EEPROM must now
+ 339   2            //  be sent after the slave address
+ 340   2            case SMB_MTADDACK:
+ 341   2      
+ 342   2               SMB0DAT = WORD_ADDR;          // Send word address
+ 343   2      
+ 344   2               if (SMB_RANDOMREAD)
+ 345   2               {
+ 346   3                  SEND_START = 1;            // Send a START after the next ACK cycle
+ 347   3                  SMB_RW = READ;
+ 348   3               }
+ 349   2      
+ 350   2               break;
+ 351   2      
+ 352   2            // Master Transmitter: Slave address + WRITE transmitted.  NACK received.
+ 353   2            // If the EEPROM should be polled, restart the transfer.
+ 354   2            // Otherwise, reset the SMBus
+ 355   2            case SMB_MTADDNACK:
+ 356   2               if(SMB_ACKPOLL)
+ 357   2               {
+ 358   3                  STA = 1;                   // Restart transfer
+ 359   3               }
+ 360   2               else
+ 361   2               {
+ 362   3                  FAIL = 1;                  // Indicate failed transfer
+ 363   3               }                             // and handle at end of ISR
+ 364   2      
+ 365   2               break;
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 7   
+
+ 366   2      
+ 367   2            // Master Transmitter: Data byte transmitted.  ACK received.
+ 368   2            // For a READ: the word address has been trasmitted, and a repeated
+ 369   2            //  start should be generated.
+ 370   2            //
+ 371   2            // For a WRITE: each data word should be sent
+ 372   2            case SMB_MTDBACK:
+ 373   2      
+ 374   2               if (SEND_START)
+ 375   2               {
+ 376   3                  STA = 1;
+ 377   3                  SEND_START = 0;
+ 378   3                  break;
+ 379   3               }
+ 380   2      
+ 381   2               if (SMB_RW==WRITE)            // Is this transfer a WRITE?
+ 382   2               {
+ 383   3                  if (i < SMB_DATA_LEN)      // Is there data to send?
+ 384   3                  {
+ 385   4                     // Send data byte
+ 386   4                     SMB0DAT = *pSMB_DATA_OUT;
+ 387   4      
+ 388   4                     // Increment data out pointer
+ 389   4                     pSMB_DATA_OUT++;
+ 390   4      
+ 391   4                     // Increment number of bytes sent
+ 392   4                     i++;
+ 393   4                  }
+ 394   3                  else
+ 395   3                  {
+ 396   4                    STO = 1;                 // Set STO to terminte transfer
+ 397   4                    SMB_BUSY = 0;            // Clear software busy flag
+ 398   4                  }
+ 399   3               }
+ 400   2               else {}                       // If this transfer is a READ, then
+ 401   2                                             // take no action, as a repeated
+ 402   2                                             // start will be generated for the
+ 403   2                                             // read operation
+ 404   2      
+ 405   2               break;
+ 406   2      
+ 407   2            // Master Transmitter: Data byte transmitted.  NACK received.
+ 408   2            // If the EEPROM should be polled, restart the transfer.
+ 409   2            // Otherwise, reset the SMBus
+ 410   2            case SMB_MTDBNACK:
+ 411   2               if(SMB_ACKPOLL)
+ 412   2               {
+ 413   3                  STA = 1;                   // Restart transfer
+ 414   3               }
+ 415   2               else
+ 416   2               {
+ 417   3                  FAIL = 1;                  // Indicate failed transfer
+ 418   3               }                             // and handle at end of ISR
+ 419   2      
+ 420   2               break;
+ 421   2      
+ 422   2            // Master Transmitter: Arbitration lost.
+ 423   2            case SMB_MTARBLOST:
+ 424   2      
+ 425   2               FAIL = 1;                     // Indicate failed transfer
+ 426   2                                             // and handle at end of ISR
+ 427   2      
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 8   
+
+ 428   2               break;
+ 429   2      
+ 430   2            // Master Receiver: Slave address + READ transmitted.  ACK received.
+ 431   2            // For a READ: check if this is a one-byte transfer. if so, set the
+ 432   2            //  NACK after the data byte is received to end the transfer. if not,
+ 433   2            //  set the ACK and receive the other data bytes.
+ 434   2            //
+ 435   2            // For a WRITE: N/A
+ 436   2            case SMB_MRADDACK:
+ 437   2               if (i == SMB_DATA_LEN)
+ 438   2               {
+ 439   3                  AA = 0;                    // Only one byte in this transfer,
+ 440   3                                             // send NACK after byte is received
+ 441   3               }
+ 442   2               else
+ 443   2               {
+ 444   3                  AA = 1;                    // More than one byte in this transfer,
+ 445   3                                             // send ACK after byte is received
+ 446   3               }
+ 447   2               break;
+ 448   2      
+ 449   2            // Master Receiver: Slave address + READ transmitted.  NACK received.
+ 450   2            // If the EEPROM should be polled, restart the transfer.
+ 451   2            // Otherwise, reset the SMBus
+ 452   2            case SMB_MRADDNACK:
+ 453   2               if(SMB_ACKPOLL)
+ 454   2               {
+ 455   3                  STA = 1;                   // Restart transfer
+ 456   3               }
+ 457   2               else
+ 458   2               {
+ 459   3                  FAIL = 1;                  // Indicate failed transfer
+ 460   3               }                             // and handle at end of ISR
+ 461   2      
+ 462   2               break;
+ 463   2      
+ 464   2            // Master Receiver: Data byte received.  ACK transmitted.
+ 465   2            // For a READ: receive each byte from the EEPROM.  if this is the last
+ 466   2            //  byte, send a NACK and set the STOP bit.
+ 467   2            //
+ 468   2            // For a WRITE: N/A
+ 469   2            case SMB_MRDBACK:
+ 470   2               if ( i < SMB_DATA_LEN )       // Is there any data remaining?
+ 471   2               {
+ 472   3                  *pSMB_DATA_IN = SMB0DAT;   // Store received byte
+ 473   3                  pSMB_DATA_IN++;            // Increment data in pointer
+ 474   3                  i++;                       // Increment number of bytes received
+ 475   3                  AA = 1;                    // Send ACK (may be cleared later
+ 476   3                                             // in the code)
+ 477   3      
+ 478   3               }
+ 479   2      
+ 480   2               if (i == SMB_DATA_LEN)        // This is the last byte
+ 481   2               {
+ 482   3                  SMB_BUSY = 0;              // Free SMBus interface
+ 483   3                  AA = 0;                    // Send NACK to indicate last byte
+ 484   3                                             // of this transfer
+ 485   3                  STO = 1;                   // Send STOP to terminate transfer
+ 486   3               }
+ 487   2      
+ 488   2               break;
+ 489   2      
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 9   
+
+ 490   2            // Master Receiver: Data byte received.  NACK transmitted.
+ 491   2            // Read operation has completed.  Read data register and send STOP.
+ 492   2            case SMB_MRDBNACK:
+ 493   2               *pSMB_DATA_IN = SMB0DAT;      // Store received byte
+ 494   2               STO = 1;
+ 495   2               SMB_BUSY = 0;
+ 496   2               AA = 1;                       // Set AA for next transfer
+ 497   2      
+ 498   2               break;
+ 499   2      
+ 500   2            // All other status codes invalid.  Reset communication.
+ 501   2            default:
+ 502   2               FAIL = 1;
+ 503   2      
+ 504   2               break;
+ 505   2         }
+ 506   1      
+ 507   1         if (FAIL)                           // If the transfer failed,
+ 508   1         {
+ 509   2            SMB0CN &= ~0x40;                 // Reset communication
+ 510   2            SMB0CN |= 0x40;
+ 511   2            STA = 0;
+ 512   2            STO = 0;
+ 513   2            AA = 0;
+ 514   2      
+ 515   2            SMB_BUSY = 0;                    // Free SMBus
+ 516   2      
+ 517   2            FAIL = 0;
+ 518   2         }
+ 519   1      
+ 520   1         SI = 0;                             // Clear interrupt flag
+ 521   1      }
+ 522          
+ 523          //-----------------------------------------------------------------------------
+ 524          // Timer3 Interrupt Service Routine (ISR)
+ 525          //-----------------------------------------------------------------------------
+ 526          //
+ 527          // A Timer3 interrupt indicates an SMBus SCL low timeout.
+ 528          // The SMBus is disabled and re-enabled if a timeout occurs.
+ 529          //
+ 530          void Timer3_ISR (void) interrupt 14
+ 531          {
+ 532   1         SMB0CN &= ~0x40;                    // Disable SMBus
+ 533   1         SMB0CN |= 0x40;                     // Re-enable SMBus
+ 534   1         TMR3CN &= ~0x80;                    // Clear Timer3 interrupt-pending flag
+ 535   1         SMB_BUSY = 0;                       // Free bus
+ 536   1      }
+ 537          
+ 538          //-----------------------------------------------------------------------------
+ 539          // Support Functions
+ 540          //-----------------------------------------------------------------------------
+ 541          
+ 542          //-----------------------------------------------------------------------------
+ 543          // write_byte
+ 544          //-----------------------------------------------------------------------------
+ 545          //
+ 546          // Return Value : None
+ 547          // Parameters   :
+ 548          //   1) unsigned char addr - address to write in the EEPROM
+ 549          //                        range is full range of character: 0 to 255
+ 550          //
+ 551          //   2) unsigned char dat - data to write to the address <addr> in the EEPROM
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 10  
+
+ 552          //                        range is full range of character: 0 to 255
+ 553          //
+ 554          // This function writes the value in <dat> to location <addr> in the EEPROM
+ 555          // then polls the EEPROM until the write is complete.
+ 556          //
+ 557          void write_byte(unsigned char addr, unsigned char dat)
+ 558          {
+ 559   1         while (SMB_BUSY);                   // Wait for SMBus to be free.
+ 560   1         SMB_BUSY = 1;                       // Claim SMBus (set to busy)
+ 561   1      
+ 562   1         // Set SMBus ISR parameters
+ 563   1         TARGET = EEPROM_ADDR;               // Set target slave address
+ 564   1         SMB_RW = WRITE;                     // Mark next transfer as a write
+ 565   1         SMB_SENDWORDADDR = 1;               // Send Word Address after Slave Address
+ 566   1         SMB_RANDOMREAD = 0;                 // Do not send a START signal after
+ 567   1                                             // the word address
+ 568   1         SMB_ACKPOLL = 1;                    // Enable Acknowledge Polling (The ISR
+ 569   1                                             // will automatically restart the
+ 570   1                                             // transfer if the slave does not
+ 571   1                                             // acknowledge its address.
+ 572   1      
+ 573   1         // Specify the Outgoing Data
+ 574   1         WORD_ADDR = addr;                   // Set the target address in the
+ 575   1                                             // EEPROM's internal memory space
+ 576   1      
+ 577   1         SMB_SINGLEBYTE_OUT = dat;           // Store <dat> (local variable) in a
+ 578   1                                             // global variable so the ISR can read
+ 579   1                                             // it after this function exits
+ 580   1      
+ 581   1         // The outgoing data pointer points to the <dat> variable
+ 582   1         pSMB_DATA_OUT = &SMB_SINGLEBYTE_OUT;
+ 583   1      
+ 584   1         SMB_DATA_LEN = 1;                   // Specify to ISR that the next transfer
+ 585   1                                             // will contain one data byte
+ 586   1      
+ 587   1         // Initiate SMBus Transfer
+ 588   1         STA = 1;
+ 589   1      }
+ 590          
+ 591          
+ 592          //-----------------------------------------------------------------------------
+ 593          // EEPROM_ByteRead
+ 594          //-----------------------------------------------------------------------------
+ 595          //
+ 596          // Return Value :
+ 597          //   1) unsigned char data - data read from address <addr> in the EEPROM
+ 598          //                        range is full range of character: 0 to 255
+ 599          //
+ 600          // Parameters   :
+ 601          //   1) unsigned char addr - address to read data from the EEPROM
+ 602          //                        range is full range of character: 0 to 255
+ 603          //
+ 604          // This function returns a single byte from location <addr> in the EEPROM then
+ 605          // polls the <SMB_BUSY> flag until the read is complete.
+ 606          //
+ 607          unsigned char read_byte(unsigned char addr)
+ 608          {
+ 609   1         unsigned char retval;               // Holds the return value
+ 610   1      
+ 611   1         while (SMB_BUSY);                   // Wait for SMBus to be free.
+ 612   1         SMB_BUSY = 1;                       // Claim SMBus (set to busy)
+ 613   1      
+C51 COMPILER V9.05   MAIN3                                                                 03/05/2012 11:45:34 PAGE 11  
+
+ 614   1         // Set SMBus ISR parameters
+ 615   1         TARGET = EEPROM_ADDR;               // Set target slave address
+ 616   1         SMB_RW = WRITE;                     // A random read starts as a write
+ 617   1                                             // then changes to a read after
+ 618   1                                             // the repeated start is sent. The
+ 619   1                                             // ISR handles this switchover if
+ 620   1                                             // the <SMB_RANDOMREAD> bit is set.
+ 621   1         SMB_SENDWORDADDR = 1;               // Send Word Address after Slave Address
+ 622   1         SMB_RANDOMREAD = 1;                 // Send a START after the word address
+ 623   1         SMB_ACKPOLL = 1;                    // Enable Acknowledge Polling
+ 624   1      
+ 625   1      
+ 626   1         // Specify the Incoming Data
+ 627   1         WORD_ADDR = addr;                   // Set the target address in the
+ 628   1                                             // EEPROM's internal memory space
+ 629   1      
+ 630   1         pSMB_DATA_IN = &retval;             // The incoming data pointer points to
+ 631   1                                             // the <retval> variable.
+ 632   1      
+ 633   1         SMB_DATA_LEN = 1;                   // Specify to ISR that the next transfer
+ 634   1                                             // will contain one data byte
+ 635   1      
+ 636   1         // Initiate SMBus Transfer
+ 637   1         STA = 1;
+ 638   1         while(SMB_BUSY);                    // Wait until data is read
+ 639   1      
+ 640   1         return retval;
+ 641   1      
+ 642   1      }
+ 643          
+ 644          
+ 645          //-----------------------------------------------------------------------------
+ 646          // End Of File
+ 647          //-----------------------------------------------------------------------------
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    849    ----
+   CONSTANT SIZE    =    276    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     11      11
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      6       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
