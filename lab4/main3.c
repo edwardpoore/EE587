@@ -328,6 +328,8 @@ void SMBUS_ISR (void) interrupt 7
       // For a WRITE: N/A
       case SMB_RP_START:
          SMB0DAT = TARGET;             // Load address of the slave.
+         SMB0DAT &= 0xFE;              // Clear the LSB of the address for the
+                                       // R/W bit
          SMB0DAT |= SMB_RW;            // Load R/W bit
          STA = 0;                      // Manually clear START bit.
          i = 0;                        // Reset data byte counter
@@ -630,7 +632,7 @@ unsigned char read_byte(unsigned char addr)
    pSMB_DATA_IN = &retval;             // The incoming data pointer points to
                                        // the <retval> variable.
 
-   SMB_DATA_LEN = 1;                   // Specify to ISR that the next transfer
+   SMB_DATA_LEN = 0;                   // Specify to ISR that the next transfer
                                        // will contain one data byte
 
    // Initiate SMBus Transfer

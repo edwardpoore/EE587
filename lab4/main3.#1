@@ -18,7 +18,7 @@
 
 //#include "16sfrs.h"                    // 16 bit SFRs
 
-#include "init35.h"                    // defines for the init functions
+#include "init3.h"                    // defines for the init functions
 
 //-----------------------------------------------------------------------------
 // Global CONSTANTS
@@ -152,7 +152,7 @@ void main (void)
    WDTCN = 0xde;                       // disable watchdog timer
    WDTCN = 0xad;
 
-   //SYSCLK_Init ();                     // initialize oscillator
+   SYSCLK_Init ();                     // initialize oscillator
 
     /*
       while(!SDA)
@@ -169,16 +169,12 @@ void main (void)
       XBR1 = 0x00;                     // Disable Crossbar
    }
    */
-   /*
    PORT_Init ();                       // initialize crossbar and GPIO
    UART0_Init ();                      // initialize UART0
 
    SMBus_Init();
    Timer3_Init();
    Interrupts_Init();
-   */
-
-   Init_Device();
 
    SI = 0;
 

@@ -147,7 +147,7 @@ void write_byte(unsigned char, unsigned char);
 void main (void) 
 {
     char keypress;
-    unsigned int i;
+   //unsigned int i;
    
    WDTCN = 0xde;                       // disable watchdog timer
    WDTCN = 0xad;
