@@ -27,15 +27,15 @@
 #define EEPROM_SIZE 20
 
 
-sbit SCL = P1^1;
-sbit SDA = P1^0;
+sbit SCL = P0^3;
+sbit SDA = P0^2;
 
 
 #define WRITE 0x00                  // SMBus WRITE command
 #define READ  0x01                  // SMBus READ command
 
 // Device addresses (7 bits, lsb is a don't care)
-#define CHIP_A 0xAE                 // Device address for chip A
+#define CHIP_A 0xA0                 // Device address for chip A
 
 // SMBus states:
 // MT = Master Transmitter
@@ -251,11 +251,11 @@ void write_byte( unsigned char byte_address, unsigned char out_byte)
    COMMAND = (chip_select | WRITE);          // Chip select + WRITE
 
    HIGH_ADD = byte_address;                  // Upper 8 address bits
-   LOW_ADD =  byte_address;                  // Lower 8 address bits
+   LOW_ADD  = byte_address;                  // Lower 8 address bits
 
    WORD = out_byte;                          // Data to be writen
    
-   STO = 0;
+   //STO = 0;
    STA = 1;                                  // Start transfer
 
 }
@@ -277,7 +277,7 @@ unsigned char read_byte(unsigned char byte_address)
    HIGH_ADD = byte_address;                  // Upper 8 address bits
    LOW_ADD =  byte_address;                  // Lower 8 address bits
    
-   STO = 0;
+   //STO = 0;
    STA = 1;                                  // Start transfer
    while (SM_BUSY);                          // Wait for transfer to finish
    return WORD;
@@ -414,7 +414,7 @@ void SMBUS_ISR (void) interrupt 7
 // A Timer3 interrupt indicates an SMBus SCL low timeout.
 // The SMBus is disabled and re-enabled if a timeout occurs.
 //
-/*
+
 void Timer3_ISR (void) interrupt 14
 {
    SMB0CN &= ~0x40;                    // Disable SMBus
@@ -422,5 +422,3 @@ void Timer3_ISR (void) interrupt 14
    TMR3CN &= ~0x80;                    // Clear Timer3 interrupt-pending flag
    SMB_BUSY = 0;                       // Free bus
 }
-
-*/

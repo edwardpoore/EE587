@@ -283,238 +283,129 @@ unsigned char read_byte(unsigned char byte_address)
    return WORD;
 }
 
-//-----------------------------------------------------------------------------
-// SMBus Interrupt Service Routine (ISR)
-//-----------------------------------------------------------------------------
-//
-// SMBus ISR state machine
-// - Master only implementation - no slave states defined
-// - All incoming data is written starting at the global pointer <pSMB_DATA_IN>
-// - All outgoing data is read from the global pointer <pSMB_DATA_OUT>
-//
+
+//------------------------------------------------------------------------------------
+// Interrupt Service Routine
+//------------------------------------------------------------------------------------
+
+
+// SMBus interrupt service routine:
+
 void SMBUS_ISR (void) interrupt 7
 {
-   bit FAIL = 0;                       // Used by the ISR to flag failed
-                                       // transfers
+   switch (SMB0STA){                   // Status code for the SMBus (SMB0STA register)
 
-   static char i;                      // Used by the ISR to count the
-                                       // number of data bytes sent or
-                                       // received
-
-   static bit SEND_START = 0;          // Send a start
-   printf("it interrupted\n");
-
-   // Status code for the SMBus (SMB0STA register)
-   switch (SMB0STA)
-   {
       // Master Transmitter/Receiver: START condition transmitted.
-      // Load SMB0DAT with slave device (EEPROM) address.
+      // The R/W bit of the COMMAND word sent after this state will
+      // always be a zero (W) because for both read and write,
+      // the memory address must be written first.
       case SMB_START:
-         SMB0DAT = TARGET;             // Load address of the slave.
-         SMB0DAT &= 0xFE;              // Clear the LSB of the address for the
-                                       // R/W bit
-         SMB0DAT |= SMB_RW;            // Load R/W bit
-         STA = 0;                      // Manually clear STA bit
-         i = 0;                        // Reset data byte counter
-
+         SMB0DAT = (COMMAND & 0xFE);   // Load address of the slave to be accessed.
+         STA = 0;                      // Manually clear START bit
+         printf("start sent\n");
          break;
 
       // Master Transmitter/Receiver: Repeated START condition transmitted.
-      // For a READ: This state only occurs during an EEPROM read operation
-      //  for the EEPROM's "random read", where a write operation with the
-      //  data address must be done before the read operation.
-      //
-      // For a WRITE: N/A
+      // This state should only occur during a read, after the memory address has been
+      // sent and acknowledged.
       case SMB_RP_START:
-         SMB0DAT = TARGET;             // Load address of the slave.
-         SMB0DAT |= SMB_RW;            // Load R/W bit
-         STA = 0;                      // Manually clear START bit.
-         i = 0;                        // Reset data byte counter
-
+         SMB0DAT = COMMAND;            // COMMAND should hold slave address + R.
+         STA = 0;
          break;
 
       // Master Transmitter: Slave address + WRITE transmitted.  ACK received.
-      // For a READ or WRITE: the word (data) address in the EEPROM must now
-      //  be sent after the slave address
       case SMB_MTADDACK:
-
-         SMB0DAT = WORD_ADDR;          // Send word address
-
-         if (SMB_RANDOMREAD)
-         {
-            SEND_START = 1;            // Send a START after the next ACK cycle
-            SMB_RW = READ;
-         }
-
+         SMB0DAT = HIGH_ADD;           // Load high byte of memory address
+                                       // to be written.
          break;
 
       // Master Transmitter: Slave address + WRITE transmitted.  NACK received.
-      // If the EEPROM should be polled, restart the transfer.
-      // Otherwise, reset the SMBus
+      // The slave is not responding.  Send a STOP followed by a START to try again.
       case SMB_MTADDNACK:
-         if(SMB_ACKPOLL)
-         {
-            STA = 1;                   // Restart transfer
-         }
-         else
-         {
-            FAIL = 1;                  // Indicate failed transfer
-         }                             // and handle at end of ISR
-
+         STO = 1;
+         STA = 1;
          break;
 
       // Master Transmitter: Data byte transmitted.  ACK received.
-      // For a READ: the word address has been trasmitted, and a repeated
-      //  start should be generated.
-      //
-      // For a WRITE: each data word should be sent
+      // This state is used in both READ and WRITE operations.  Check BYTE_NUMBER
+      // for memory address status - if only HIGH_ADD has been sent, load LOW_ADD.
+      // If LOW_ADD has been sent, check COMMAND for R/W value to determine 
+      // next state.
       case SMB_MTDBACK:
+         switch (BYTE_NUMBER){
+            case 2:                    // If BYTE_NUMBER=2, only HIGH_ADD
+               SMB0DAT = LOW_ADD;      // has been sent.
+               BYTE_NUMBER--;          // Decrement for next time around.
+               break;
+            case 1:                    // If BYTE_NUMBER=1, LOW_ADD was just sent.
+               if (COMMAND & 0x01){    // If R/W=READ, sent repeated START.
+                  STO = 0;
+                  STA = 1;
 
-         if (SEND_START)
-         {
-            STA = 1;
-            SEND_START = 0;
-            break;
-         }
-
-         if (SMB_RW==WRITE)            // Is this transfer a WRITE?
-         {
-            if (i < SMB_DATA_LEN)      // Is there data to send?
-            {
-               // Send data byte
-               SMB0DAT = *pSMB_DATA_OUT;
-
-               // Increment data out pointer
-               pSMB_DATA_OUT++;
-
-               // Increment number of bytes sent
-               i++;
+               } else { 
+                  SMB0DAT = WORD;      // If R/W=WRITE, load byte to write.
+                  BYTE_NUMBER--;
+               }
+               break;
+            default:                   // If BYTE_NUMBER=0, transfer is finished.
+               STO = 1;
+               SM_BUSY = 0;            // Free SMBus
             }
-            else
-            {
-              STO = 1;                 // Set STO to terminte transfer
-              SMB_BUSY = 0;            // Clear software busy flag
-            }
-         }
-         else {}                       // If this transfer is a READ, then
-                                       // take no action, as a repeated
-                                       // start will be generated for the
-                                       // read operation
-
          break;
 
+
       // Master Transmitter: Data byte transmitted.  NACK received.
-      // If the EEPROM should be polled, restart the transfer.
-      // Otherwise, reset the SMBus
+      // Slave not responding.  Send STOP followed by START to try again.
       case SMB_MTDBNACK:
-         if(SMB_ACKPOLL)
-         {
-            STA = 1;                   // Restart transfer
-         }
-         else
-         {
-            FAIL = 1;                  // Indicate failed transfer
-         }                             // and handle at end of ISR
+         STO = 1;
+         STA = 1;
          break;
 
       // Master Transmitter: Arbitration lost.
+      // Should not occur.  If so, restart transfer.
       case SMB_MTARBLOST:
-
-         FAIL = 1;                     // Indicate failed transfer
-                                       // and handle at end of ISR
+         STO = 1;
+         STA = 1;
          break;
 
       // Master Receiver: Slave address + READ transmitted.  ACK received.
-      // For a READ: check if this is a one-byte transfer. if so, set the
-      //  NACK after the data byte is received to end the transfer. if not,
-      //  set the ACK and receive the other data bytes.
-      //
-      // For a WRITE: N/A
+      // Set to transmit NACK after next transfer since it will be the last (only)
+      // byte.
       case SMB_MRADDACK:
-         //if (i == SMB_DATA_LEN)
-         //{
-            AA = 0;                    // Only one byte in this transfer,
-                                       // send NACK after byte is received
-         //}
-         //else
-         //{
-         //   AA = 1;                    // More than one byte in this transfer,
-                                         // send ACK after byte is received
-         //}
+         AA = 0;                       // NACK sent on acknowledge cycle.
          break;
 
       // Master Receiver: Slave address + READ transmitted.  NACK received.
-      // If the EEPROM should be polled, restart the transfer.
-      // Otherwise, reset the SMBus
+      // Slave not responding.  Send repeated start to try again.
       case SMB_MRADDNACK:
-         if(SMB_ACKPOLL)
-         {
-            STA = 1;                   // Restart transfer
-         }
-         else
-         {
-            FAIL = 1;                  // Indicate failed transfer
-         }                             // and handle at end of ISR
-
+         STO = 0;
+         STA = 1;
          break;
 
-      // Master Receiver: Data byte received.  ACK transmitted.
-      // For a READ: receive each byte from the EEPROM.  if this is the last
-      //  byte, send a NACK and set the STOP bit.
-      //
-      // For a WRITE: N/A
+      // Data byte received.  ACK transmitted.
+      // State should not occur because AA is set to zero in previous state.
+      // Send STOP if state does occur.
       case SMB_MRDBACK:
-         if ( i < SMB_DATA_LEN )       // Is there any data remaining?
-         {
-            *pSMB_DATA_IN = SMB0DAT;   // Store received byte
-            pSMB_DATA_IN++;            // Increment data in pointer
-            i++;                       // Increment number of bytes received
-            AA = 1;                    // Send ACK (may be cleared later
-                                       // in the code)
-
-         }
-
-         if (i == SMB_DATA_LEN)        // This is the last byte
-         {
-            SMB_BUSY = 0;              // Free SMBus interface
-            AA = 0;                    // Send NACK to indicate last byte
-                                       // of this transfer
-            STO = 1;                   // Send STOP to terminate transfer
-         }
-
+         STO = 1;
+         SM_BUSY = 0;
          break;
 
-      // Master Receiver: Data byte received.  NACK transmitted.
+      // Data byte received.  NACK transmitted.
       // Read operation has completed.  Read data register and send STOP.
       case SMB_MRDBNACK:
-         *pSMB_DATA_IN = SMB0DAT;      // Store received byte
+         WORD = SMB0DAT;
          STO = 1;
-         SMB_BUSY = 0;
-         AA = 1;                       // Set AA for next transfer
-
+         SM_BUSY = 0;                  // Free SMBus
          break;
 
-      // All other status codes invalid.  Reset communication.
+      // All other status codes meaningless in this application. Reset communication.
       default:
-         FAIL = 1;
-
+         STO = 1;                      // Reset communication.
+         SM_BUSY = 0;
          break;
-   }
+      }
 
-   if (FAIL)                           // If the transfer failed,
-   {
-      SMB0CN &= ~0x40;                 // Reset communication
-      SMB0CN |= 0x40;
-      STA = 0;
-      STO = 0;
-      AA = 0;
-
-      SMB_BUSY = 0;                    // Free SMBus
-
-      FAIL = 0;
-   }
-
-   SI = 0;                             // Clear interrupt flag
+   SI=0;                               // clear interrupt flag
 }
 //-----------------------------------------------------------------------------
 // Timer3 Interrupt Service Routine (ISR)

@@ -302,7 +302,6 @@ void SMBUS_ISR (void) interrupt 7
       case SMB_START:
          SMB0DAT = (COMMAND & 0xFE);   // Load address of the slave to be accessed.
          STA = 0;                      // Manually clear START bit
-         printf("start sent\n");
          break;
 
       // Master Transmitter/Receiver: Repeated START condition transmitted.

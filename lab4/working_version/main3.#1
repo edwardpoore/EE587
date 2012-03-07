@@ -414,7 +414,7 @@ void SMBUS_ISR (void) interrupt 7
 // A Timer3 interrupt indicates an SMBus SCL low timeout.
 // The SMBus is disabled and re-enabled if a timeout occurs.
 //
-
+/*
 void Timer3_ISR (void) interrupt 14
 {
    SMB0CN &= ~0x40;                    // Disable SMBus
@@ -422,3 +422,4 @@ void Timer3_ISR (void) interrupt 14
    TMR3CN &= ~0x80;                    // Clear Timer3 interrupt-pending flag
    SMB_BUSY = 0;                       // Free bus
 }
+*/
