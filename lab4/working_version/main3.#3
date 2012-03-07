@@ -1,0 +1,535 @@
+//-----------------------------------------------------------------------------
+// main3.c
+//-----------------------------------------------------------------------------
+// Main program for EE599 Experiment #4
+//
+// Author: James E. Lumpp
+// Date: 2/21/02
+// Target:  8051F020
+// Assignment: Experiment #4
+//
+
+//-----------------------------------------------------------------------------
+// Includes
+//-----------------------------------------------------------------------------
+#include <compiler_defs.h>
+#include <C8051F020_defs.h>                 // SFR declarations
+#include <stdio.h>
+
+//#include "16sfrs.h"                    // 16 bit SFRs
+
+#include "init3.h"                    // defines for the init functions
+
+//-----------------------------------------------------------------------------
+// Global CONSTANTS
+//-----------------------------------------------------------------------------
+
+#define EEPROM_SIZE 20
+
+
+sbit SCL = P1^1;
+sbit SDA = P1^0;
+
+
+#define WRITE 0x00                  // SMBus WRITE command
+#define READ  0x01                  // SMBus READ command
+
+// Device addresses (7 bits, lsb is a don't care)
+#define CHIP_A 0xAE                 // Device address for chip A
+
+// SMBus states:
+// MT = Master Transmitter
+// MR = Master Receiver
+#define  SMB_BUS_ERROR  0x00        // (all modes) BUS ERROR
+#define  SMB_START      0x08        // (MT & MR) START transmitted
+#define  SMB_RP_START   0x10        // (MT & MR) repeated START
+#define  SMB_MTADDACK   0x18        // (MT) Slave address + W transmitted;
+                                    //  ACK received
+#define  SMB_MTADDNACK  0x20        // (MT) Slave address + W transmitted;
+                                    //  NACK received
+#define  SMB_MTDBACK    0x28        // (MT) data byte transmitted; ACK rec'vd
+#define  SMB_MTDBNACK   0x30        // (MT) data byte transmitted; NACK rec'vd
+#define  SMB_MTARBLOST  0x38        // (MT) arbitration lost
+#define  SMB_MRADDACK   0x40        // (MR) Slave address + R transmitted;
+                                    //  ACK received
+#define  SMB_MRADDNACK  0x48        // (MR) Slave address + R transmitted;
+                                    //  NACK received
+#define  SMB_MRDBACK    0x50        // (MR) data byte rec'vd; ACK transmitted
+#define  SMB_MRDBNACK   0x58        // (MR) data byte rec'vd; NACK transmitted
+
+
+//-----------------------------------------------------------------------------------
+//Global VARIABLES
+//-----------------------------------------------------------------------------------
+char COMMAND;                       // Holds the slave address + R/W bit for
+                                    // use in the SMBus ISR.
+
+char WORD;                          // Holds data to be transmitted by the SMBus
+                                    // OR data that has just been received.
+
+char BYTE_NUMBER;                   // Used by ISR to check what data has just been
+                                    // sent - High address byte, Low byte, or data
+                                    // byte
+
+unsigned char HIGH_ADD, LOW_ADD;    // High & Low byte for EEPROM memory address
+
+bit SM_BUSY;                        // This bit is set when a send or receive
+                                    // is started. It is cleared by the
+                                    // ISR when the operation is finished.
+unsigned char chip_select = CHIP_A;
+
+// 16-bit SFR declarations
+//sfr16    TMR3RL   = 0x92;              // Timer3 reload registers
+//sfr16    TMR3     = 0x94;              // Timer3 counter registers
+
+
+//-----------------------------------------------------------------------------
+// Function PROTOTYPES
+//-----------------------------------------------------------------------------
+void dump_eeprom(void); 
+void block_fill(void); 
+void read_eeprom(void); 
+void write_eeprom(void); 
+
+void SMBus_ISR(void);
+void Timer3_ISR(void);
+
+
+unsigned char read_byte(unsigned char);
+void write_byte(unsigned char, unsigned char);
+
+
+
+//-----------------------------------------------------------------------------
+// MAIN Routine
+//-----------------------------------------------------------------------------
+
+void main (void) 
+{
+   char keypress;
+
+   WDTCN = 0xde;                    // disable watchdog timer
+   WDTCN = 0xad;
+
+
+   SYSCLK_Init ();                     // initialize oscillator
+   //PORT_Init ();                       // initialize crossbar and GPIO
+   UART0_Init ();                      // initialize UART0
+
+   //OSCICN |= 0x03;                  // Set internal oscillator to highest setting
+                                    // (16 MHz)
+
+
+   XBR0 = 0x05;                     // Route SMBus to GPIO pins through crossbar
+   XBR2 = 0x44;                     // Enable crossbar and weak pull-ups
+   P1MDOUT = 0x03;
+
+   SMB0CN = 0x44;                   // Enable SMBus with ACKs on acknowledge 
+                                    // cycle
+   SMB0CR = -80;                    // SMBus clock rate = 100kHz.
+
+   EIE1 |= 2;                       // SMBus interrupt enable
+   EA = 1;                          // Global interrupt enable
+
+   SM_BUSY = 0;                     // Free SMBus for first transfer.
+   
+
+   //SMBus_Init();
+   //Timer3_Init();
+   //Interrupts_Init();
+   //SI = 0;
+
+   printf ("EE587 Experiment #3\n");
+   printf ("Initialization Complete...\n");
+  
+   while (1) {
+
+       printf("what would you like to do? (d,b,r,w):");
+    
+       keypress = getchar();
+
+       printf("\n");
+
+    
+       switch(keypress) {
+           case 'd': dump_eeprom(); break;
+           case 'b': block_fill(); break;
+           case 'r': read_eeprom(); break;
+           case 'w': write_eeprom(); break;
+           case ' ':;
+           default:
+               printf("Invalid Command '%c'\n",keypress);
+               break;
+       }
+    
+    
+    
+    }  // while(1)
+    
+}  // main
+//////////////////////////////////////////////////////////////
+/// dump_eeprom
+//////////////////////////////////////////////////////////////
+void dump_eeprom()   // dump the contents of the eeprom
+{
+    unsigned char i;
+
+    printf("EEPROM contents are:\n");
+    for(i=0;i<EEPROM_SIZE;i++) {
+        printf("%bx ",read_byte(i));
+    }
+    printf("\n");
+}  // dump_eeprom();
+//////////////////////////////////////////////////////////////
+/// block_fill
+//////////////////////////////////////////////////////////////
+void block_fill()    // block fill the eeprom
+{
+    unsigned char i;
+    unsigned int data_in;
+
+    printf("EEPROM block fill...\n");
+
+    for(i=0;i<EEPROM_SIZE;i++) {
+        printf("eeprom(%bx):",i);
+        scanf("%x", &data_in);
+        write_byte(i,(unsigned char)data_in);
+        printf("\n");
+    }
+}  // block_fill();
+//////////////////////////////////////////////////////////////
+/// read_eeprom
+//////////////////////////////////////////////////////////////
+void read_eeprom()   // read a byte from the eeprom
+{
+int address;
+
+  printf("address to read?:");
+  scanf("%x",&address);  // this is a very poor/dangerous use of scanf. if the 
+                        // user input does not match, you are toast.  not to
+                        // mention the fact we are ignoring the return code
+                        // (do as i say, not as i do)
+  printf("\n");
+
+  if(address < 0 || address > EEPROM_SIZE-1) {
+     printf("Bad Address (Ignored)\n");
+  } else {
+    printf("Byte @ %bx is %bx\n",(unsigned char)address,read_byte((unsigned char)address));
+  }
+}  // read_eeprom();
+//////////////////////////////////////////////////////////////
+/// write_eeprom
+//////////////////////////////////////////////////////////////
+void write_eeprom()  // write a byte to the eeprom
+{
+unsigned int address;
+unsigned char databyte;
+
+  printf("address to write?:");
+  scanf("%x",&address);  // this is a very poor/dangerous use of scanf. if the 
+                        // user input does not match, you are toast.  not to
+                        // mention the fact we are ignoring the return code
+                        // (do as i say, not as i do)
+  printf("\n");
+
+  if(address < 0 || address > 29) {
+     printf("Bad Address (Ignored)\n");
+  } else {
+    printf("value to write?:");
+    scanf("%bx",&databyte);          // don't do this in your programs
+    write_byte((unsigned char) address, databyte);
+  }
+}  // write_eeprom();
+void write_byte( unsigned char byte_address, unsigned char out_byte)
+{
+   while (SM_BUSY);                          // Wait for SMBus to be free.
+   SM_BUSY = 1;                              // Occupy SMBus (set to busy)
+   SMB0CN = 0x44;                            // SMBus enabled,
+                                             // ACK on acknowledge cycle
+
+   BYTE_NUMBER = 1;                          // 2 address bytes.
+   COMMAND = (chip_select | WRITE);          // Chip select + WRITE
+
+   HIGH_ADD = byte_address;                  // Upper 8 address bits
+   LOW_ADD =  byte_address;                  // Lower 8 address bits
+
+   WORD = out_byte;                          // Data to be writen
+   
+   STO = 0;
+   STA = 1;                                  // Start transfer
+
+}
+
+// SMBus random read function------------------------------------------------------
+// Reads 1 byte from the specified memory location.
+//
+// byte_address = memory address of byte to read
+// chip_select = device address of EEPROM to be read from
+unsigned char read_byte(unsigned char byte_address)
+{
+   while (SM_BUSY);                          // Wait for bus to be free.
+   SM_BUSY = 1;                              // Occupy SMBus (set to busy)
+   SMB0CN = 0x44;                            // SMBus enabled, ACK on acknowledge cycle
+
+   BYTE_NUMBER = 1;                          // 2 address bytes
+   COMMAND = (chip_select | READ);           // Chip select + READ
+
+   HIGH_ADD = byte_address;                  // Upper 8 address bits
+   LOW_ADD =  byte_address;                  // Lower 8 address bits
+   
+   STO = 0;
+   STA = 1;                                  // Start transfer
+   while (SM_BUSY);                          // Wait for transfer to finish
+   return WORD;
+}
+
+//-----------------------------------------------------------------------------
+// SMBus Interrupt Service Routine (ISR)
+//-----------------------------------------------------------------------------
+//
+// SMBus ISR state machine
+// - Master only implementation - no slave states defined
+// - All incoming data is written starting at the global pointer <pSMB_DATA_IN>
+// - All outgoing data is read from the global pointer <pSMB_DATA_OUT>
+//
+void SMBUS_ISR (void) interrupt 7
+{
+   bit FAIL = 0;                       // Used by the ISR to flag failed
+                                       // transfers
+
+   static char i;                      // Used by the ISR to count the
+                                       // number of data bytes sent or
+                                       // received
+
+   static bit SEND_START = 0;          // Send a start
+   printf("it interrupted\n");
+
+   // Status code for the SMBus (SMB0STA register)
+   switch (SMB0STA)
+   {
+      // Master Transmitter/Receiver: START condition transmitted.
+      // Load SMB0DAT with slave device (EEPROM) address.
+      case SMB_START:
+         SMB0DAT = TARGET;             // Load address of the slave.
+         SMB0DAT &= 0xFE;              // Clear the LSB of the address for the
+                                       // R/W bit
+         SMB0DAT |= SMB_RW;            // Load R/W bit
+         STA = 0;                      // Manually clear STA bit
+         i = 0;                        // Reset data byte counter
+
+         break;
+
+      // Master Transmitter/Receiver: Repeated START condition transmitted.
+      // For a READ: This state only occurs during an EEPROM read operation
+      //  for the EEPROM's "random read", where a write operation with the
+      //  data address must be done before the read operation.
+      //
+      // For a WRITE: N/A
+      case SMB_RP_START:
+         SMB0DAT = TARGET;             // Load address of the slave.
+         SMB0DAT |= SMB_RW;            // Load R/W bit
+         STA = 0;                      // Manually clear START bit.
+         i = 0;                        // Reset data byte counter
+
+         break;
+
+      // Master Transmitter: Slave address + WRITE transmitted.  ACK received.
+      // For a READ or WRITE: the word (data) address in the EEPROM must now
+      //  be sent after the slave address
+      case SMB_MTADDACK:
+
+         SMB0DAT = WORD_ADDR;          // Send word address
+
+         if (SMB_RANDOMREAD)
+         {
+            SEND_START = 1;            // Send a START after the next ACK cycle
+            SMB_RW = READ;
+         }
+
+         break;
+
+      // Master Transmitter: Slave address + WRITE transmitted.  NACK received.
+      // If the EEPROM should be polled, restart the transfer.
+      // Otherwise, reset the SMBus
+      case SMB_MTADDNACK:
+         if(SMB_ACKPOLL)
+         {
+            STA = 1;                   // Restart transfer
+         }
+         else
+         {
+            FAIL = 1;                  // Indicate failed transfer
+         }                             // and handle at end of ISR
+
+         break;
+
+      // Master Transmitter: Data byte transmitted.  ACK received.
+      // For a READ: the word address has been trasmitted, and a repeated
+      //  start should be generated.
+      //
+      // For a WRITE: each data word should be sent
+      case SMB_MTDBACK:
+
+         if (SEND_START)
+         {
+            STA = 1;
+            SEND_START = 0;
+            break;
+         }
+
+         if (SMB_RW==WRITE)            // Is this transfer a WRITE?
+         {
+            if (i < SMB_DATA_LEN)      // Is there data to send?
+            {
+               // Send data byte
+               SMB0DAT = *pSMB_DATA_OUT;
+
+               // Increment data out pointer
+               pSMB_DATA_OUT++;
+
+               // Increment number of bytes sent
+               i++;
+            }
+            else
+            {
+              STO = 1;                 // Set STO to terminte transfer
+              SMB_BUSY = 0;            // Clear software busy flag
+            }
+         }
+         else {}                       // If this transfer is a READ, then
+                                       // take no action, as a repeated
+                                       // start will be generated for the
+                                       // read operation
+
+         break;
+
+      // Master Transmitter: Data byte transmitted.  NACK received.
+      // If the EEPROM should be polled, restart the transfer.
+      // Otherwise, reset the SMBus
+      case SMB_MTDBNACK:
+         if(SMB_ACKPOLL)
+         {
+            STA = 1;                   // Restart transfer
+         }
+         else
+         {
+            FAIL = 1;                  // Indicate failed transfer
+         }                             // and handle at end of ISR
+         break;
+
+      // Master Transmitter: Arbitration lost.
+      case SMB_MTARBLOST:
+
+         FAIL = 1;                     // Indicate failed transfer
+                                       // and handle at end of ISR
+         break;
+
+      // Master Receiver: Slave address + READ transmitted.  ACK received.
+      // For a READ: check if this is a one-byte transfer. if so, set the
+      //  NACK after the data byte is received to end the transfer. if not,
+      //  set the ACK and receive the other data bytes.
+      //
+      // For a WRITE: N/A
+      case SMB_MRADDACK:
+         //if (i == SMB_DATA_LEN)
+         //{
+            AA = 0;                    // Only one byte in this transfer,
+                                       // send NACK after byte is received
+         //}
+         //else
+         //{
+         //   AA = 1;                    // More than one byte in this transfer,
+                                         // send ACK after byte is received
+         //}
+         break;
+
+      // Master Receiver: Slave address + READ transmitted.  NACK received.
+      // If the EEPROM should be polled, restart the transfer.
+      // Otherwise, reset the SMBus
+      case SMB_MRADDNACK:
+         if(SMB_ACKPOLL)
+         {
+            STA = 1;                   // Restart transfer
+         }
+         else
+         {
+            FAIL = 1;                  // Indicate failed transfer
+         }                             // and handle at end of ISR
+
+         break;
+
+      // Master Receiver: Data byte received.  ACK transmitted.
+      // For a READ: receive each byte from the EEPROM.  if this is the last
+      //  byte, send a NACK and set the STOP bit.
+      //
+      // For a WRITE: N/A
+      case SMB_MRDBACK:
+         if ( i < SMB_DATA_LEN )       // Is there any data remaining?
+         {
+            *pSMB_DATA_IN = SMB0DAT;   // Store received byte
+            pSMB_DATA_IN++;            // Increment data in pointer
+            i++;                       // Increment number of bytes received
+            AA = 1;                    // Send ACK (may be cleared later
+                                       // in the code)
+
+         }
+
+         if (i == SMB_DATA_LEN)        // This is the last byte
+         {
+            SMB_BUSY = 0;              // Free SMBus interface
+            AA = 0;                    // Send NACK to indicate last byte
+                                       // of this transfer
+            STO = 1;                   // Send STOP to terminate transfer
+         }
+
+         break;
+
+      // Master Receiver: Data byte received.  NACK transmitted.
+      // Read operation has completed.  Read data register and send STOP.
+      case SMB_MRDBNACK:
+         *pSMB_DATA_IN = SMB0DAT;      // Store received byte
+         STO = 1;
+         SMB_BUSY = 0;
+         AA = 1;                       // Set AA for next transfer
+
+         break;
+
+      // All other status codes invalid.  Reset communication.
+      default:
+         FAIL = 1;
+
+         break;
+   }
+
+   if (FAIL)                           // If the transfer failed,
+   {
+      SMB0CN &= ~0x40;                 // Reset communication
+      SMB0CN |= 0x40;
+      STA = 0;
+      STO = 0;
+      AA = 0;
+
+      SMB_BUSY = 0;                    // Free SMBus
+
+      FAIL = 0;
+   }
+
+   SI = 0;                             // Clear interrupt flag
+}
+//-----------------------------------------------------------------------------
+// Timer3 Interrupt Service Routine (ISR)
+//-----------------------------------------------------------------------------
+//
+// A Timer3 interrupt indicates an SMBus SCL low timeout.
+// The SMBus is disabled and re-enabled if a timeout occurs.
+//
+/*
+void Timer3_ISR (void) interrupt 14
+{
+   SMB0CN &= ~0x40;                    // Disable SMBus
+   SMB0CN |= 0x40;                     // Re-enable SMBus
+   TMR3CN &= ~0x80;                    // Clear Timer3 interrupt-pending flag
+   SMB_BUSY = 0;                       // Free bus
+}
+
+*/

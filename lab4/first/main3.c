@@ -18,7 +18,7 @@
 
 //#include "16sfrs.h"                    // 16 bit SFRs
 
-#include "init35.h"                    // defines for the init functions
+#include "init3.h"                    // defines for the init functions
 
 //-----------------------------------------------------------------------------
 // Global CONSTANTS
@@ -27,7 +27,7 @@
 
 #define  EEPROM_SIZE 20
 
-#define  SMB_FREQUENCY  400000L        // Target SCL clock rate
+#define  SMB_FREQUENCY  100000L        // Target SCL clock rate
                                        // This example supports between 10kHz
                                        // and 100kHz
 
@@ -147,12 +147,12 @@ void write_byte(unsigned char, unsigned char);
 void main (void) 
 {
     char keypress;
-    unsigned int i;
+   //unsigned int i;
    
    WDTCN = 0xde;                       // disable watchdog timer
    WDTCN = 0xad;
 
-   //SYSCLK_Init ();                     // initialize oscillator
+   SYSCLK_Init ();                     // initialize oscillator
 
     /*
       while(!SDA)
@@ -169,16 +169,12 @@ void main (void)
       XBR1 = 0x00;                     // Disable Crossbar
    }
    */
-   /*
    PORT_Init ();                       // initialize crossbar and GPIO
    UART0_Init ();                      // initialize UART0
 
    SMBus_Init();
    Timer3_Init();
    Interrupts_Init();
-   */
-
-   Init_Device();
 
    SI = 0;
 
@@ -332,6 +328,8 @@ void SMBUS_ISR (void) interrupt 7
       // For a WRITE: N/A
       case SMB_RP_START:
          SMB0DAT = TARGET;             // Load address of the slave.
+         SMB0DAT &= 0xFE;              // Clear the LSB of the address for the
+                                       // R/W bit
          SMB0DAT |= SMB_RW;            // Load R/W bit
          STA = 0;                      // Manually clear START bit.
          i = 0;                        // Reset data byte counter
@@ -634,7 +632,7 @@ unsigned char read_byte(unsigned char addr)
    pSMB_DATA_IN = &retval;             // The incoming data pointer points to
                                        // the <retval> variable.
 
-   SMB_DATA_LEN = 1;                   // Specify to ISR that the next transfer
+   SMB_DATA_LEN = 0;                   // Specify to ISR that the next transfer
                                        // will contain one data byte
 
    // Initiate SMBus Transfer
