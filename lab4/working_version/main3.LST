@@ -1,4 +1,4 @@
-C51 COMPILER V9.05   MAIN3                                                                 03/06/2012 19:19:00 PAGE 1   
+C51 COMPILER V9.05   MAIN3                                                                 03/08/2012 19:07:45 PAGE 1   
 
 
 C51 COMPILER V9.05, COMPILATION OF MODULE MAIN3
@@ -62,7 +62,7 @@ line level    source
   53          #define  SMB_MRADDACK   0x40        // (MR) Slave address + R transmitted;
   54                                              //  ACK received
   55          #define  SMB_MRADDNACK  0x48        // (MR) Slave address + R transmitted;
-C51 COMPILER V9.05   MAIN3                                                                 03/06/2012 19:19:00 PAGE 2   
+C51 COMPILER V9.05   MAIN3                                                                 03/08/2012 19:07:45 PAGE 2   
 
   56                                              //  NACK received
   57          #define  SMB_MRDBACK    0x50        // (MR) data byte rec'vd; ACK transmitted
@@ -126,7 +126,7 @@ line level    source
  115   1         SYSCLK_Init ();                     // initialize oscillator
  116   1         //PORT_Init ();                       // initialize crossbar and GPIO
  117   1         UART0_Init ();                      // initialize UART0
-C51 COMPILER V9.05   MAIN3                                                                 03/06/2012 19:19:00 PAGE 3   
+C51 COMPILER V9.05   MAIN3                                                                 03/08/2012 19:07:45 PAGE 3   
 
  118   1      
  119   1         //OSCICN |= 0x03;                  // Set internal oscillator to highest setting
@@ -190,7 +190,7 @@ line level    source
  177   1          printf("EEPROM contents are:\n");
  178   1          for(i=0;i<EEPROM_SIZE;i++) {
  179   2              printf("%bx ",read_byte(i));
-C51 COMPILER V9.05   MAIN3                                                                 03/06/2012 19:19:00 PAGE 4   
+C51 COMPILER V9.05   MAIN3                                                                 03/08/2012 19:07:45 PAGE 4   
 
  180   2          }
  181   1          printf("\n");
@@ -254,7 +254,7 @@ line level    source
  239   2          scanf("%bx",&databyte);          // don't do this in your programs
  240   2          write_byte((unsigned char) address, databyte);
  241   2        }
-C51 COMPILER V9.05   MAIN3                                                                 03/06/2012 19:19:00 PAGE 5   
+C51 COMPILER V9.05   MAIN3                                                                 03/08/2012 19:07:45 PAGE 5   
 
  242   1      }  // write_eeprom();
  243          void write_byte( unsigned char byte_address, unsigned char out_byte)
@@ -318,139 +318,138 @@ line level    source
  301   2            // the memory address must be written first.
  302   2            case SMB_START:
  303   2               SMB0DAT = (COMMAND & 0xFE);   // Load address of the slave to be accessed.
-C51 COMPILER V9.05   MAIN3                                                                 03/06/2012 19:19:00 PAGE 6   
+C51 COMPILER V9.05   MAIN3                                                                 03/08/2012 19:07:45 PAGE 6   
 
  304   2               STA = 0;                      // Manually clear START bit
- 305   2               printf("start sent\n");
- 306   2               break;
- 307   2      
- 308   2            // Master Transmitter/Receiver: Repeated START condition transmitted.
- 309   2            // This state should only occur during a read, after the memory address has been
- 310   2            // sent and acknowledged.
- 311   2            case SMB_RP_START:
- 312   2               SMB0DAT = COMMAND;            // COMMAND should hold slave address + R.
- 313   2               STA = 0;
- 314   2               break;
- 315   2      
- 316   2            // Master Transmitter: Slave address + WRITE transmitted.  ACK received.
- 317   2            case SMB_MTADDACK:
- 318   2               SMB0DAT = HIGH_ADD;           // Load high byte of memory address
- 319   2                                             // to be written.
- 320   2               break;
- 321   2      
- 322   2            // Master Transmitter: Slave address + WRITE transmitted.  NACK received.
- 323   2            // The slave is not responding.  Send a STOP followed by a START to try again.
- 324   2            case SMB_MTADDNACK:
- 325   2               STO = 1;
- 326   2               STA = 1;
- 327   2               break;
- 328   2      
- 329   2            // Master Transmitter: Data byte transmitted.  ACK received.
- 330   2            // This state is used in both READ and WRITE operations.  Check BYTE_NUMBER
- 331   2            // for memory address status - if only HIGH_ADD has been sent, load LOW_ADD.
- 332   2            // If LOW_ADD has been sent, check COMMAND for R/W value to determine 
- 333   2            // next state.
- 334   2            case SMB_MTDBACK:
- 335   2               switch (BYTE_NUMBER){
- 336   3                  case 2:                    // If BYTE_NUMBER=2, only HIGH_ADD
- 337   3                     SMB0DAT = LOW_ADD;      // has been sent.
- 338   3                     BYTE_NUMBER--;          // Decrement for next time around.
- 339   3                     break;
- 340   3                  case 1:                    // If BYTE_NUMBER=1, LOW_ADD was just sent.
- 341   3                     if (COMMAND & 0x01){    // If R/W=READ, sent repeated START.
- 342   4                        STO = 0;
- 343   4                        STA = 1;
- 344   4      
- 345   4                     } else { 
- 346   4                        SMB0DAT = WORD;      // If R/W=WRITE, load byte to write.
- 347   4                        BYTE_NUMBER--;
- 348   4                     }
- 349   3                     break;
- 350   3                  default:                   // If BYTE_NUMBER=0, transfer is finished.
- 351   3                     STO = 1;
- 352   3                     SM_BUSY = 0;            // Free SMBus
- 353   3                  }
- 354   2               break;
+ 305   2               break;
+ 306   2      
+ 307   2            // Master Transmitter/Receiver: Repeated START condition transmitted.
+ 308   2            // This state should only occur during a read, after the memory address has been
+ 309   2            // sent and acknowledged.
+ 310   2            case SMB_RP_START:
+ 311   2               SMB0DAT = COMMAND;            // COMMAND should hold slave address + R.
+ 312   2               STA = 0;
+ 313   2               break;
+ 314   2      
+ 315   2            // Master Transmitter: Slave address + WRITE transmitted.  ACK received.
+ 316   2            case SMB_MTADDACK:
+ 317   2               SMB0DAT = HIGH_ADD;           // Load high byte of memory address
+ 318   2                                             // to be written.
+ 319   2               break;
+ 320   2      
+ 321   2            // Master Transmitter: Slave address + WRITE transmitted.  NACK received.
+ 322   2            // The slave is not responding.  Send a STOP followed by a START to try again.
+ 323   2            case SMB_MTADDNACK:
+ 324   2               STO = 1;
+ 325   2               STA = 1;
+ 326   2               break;
+ 327   2      
+ 328   2            // Master Transmitter: Data byte transmitted.  ACK received.
+ 329   2            // This state is used in both READ and WRITE operations.  Check BYTE_NUMBER
+ 330   2            // for memory address status - if only HIGH_ADD has been sent, load LOW_ADD.
+ 331   2            // If LOW_ADD has been sent, check COMMAND for R/W value to determine 
+ 332   2            // next state.
+ 333   2            case SMB_MTDBACK:
+ 334   2               switch (BYTE_NUMBER){
+ 335   3                  case 2:                    // If BYTE_NUMBER=2, only HIGH_ADD
+ 336   3                     SMB0DAT = LOW_ADD;      // has been sent.
+ 337   3                     BYTE_NUMBER--;          // Decrement for next time around.
+ 338   3                     break;
+ 339   3                  case 1:                    // If BYTE_NUMBER=1, LOW_ADD was just sent.
+ 340   3                     if (COMMAND & 0x01){    // If R/W=READ, sent repeated START.
+ 341   4                        STO = 0;
+ 342   4                        STA = 1;
+ 343   4      
+ 344   4                     } else { 
+ 345   4                        SMB0DAT = WORD;      // If R/W=WRITE, load byte to write.
+ 346   4                        BYTE_NUMBER--;
+ 347   4                     }
+ 348   3                     break;
+ 349   3                  default:                   // If BYTE_NUMBER=0, transfer is finished.
+ 350   3                     STO = 1;
+ 351   3                     SM_BUSY = 0;            // Free SMBus
+ 352   3                  }
+ 353   2               break;
+ 354   2      
  355   2      
- 356   2      
- 357   2            // Master Transmitter: Data byte transmitted.  NACK received.
- 358   2            // Slave not responding.  Send STOP followed by START to try again.
- 359   2            case SMB_MTDBNACK:
- 360   2               STO = 1;
- 361   2               STA = 1;
- 362   2               break;
- 363   2      
- 364   2            // Master Transmitter: Arbitration lost.
- 365   2            // Should not occur.  If so, restart transfer.
-C51 COMPILER V9.05   MAIN3                                                                 03/06/2012 19:19:00 PAGE 7   
+ 356   2            // Master Transmitter: Data byte transmitted.  NACK received.
+ 357   2            // Slave not responding.  Send STOP followed by START to try again.
+ 358   2            case SMB_MTDBNACK:
+ 359   2               STO = 1;
+ 360   2               STA = 1;
+ 361   2               break;
+ 362   2      
+ 363   2            // Master Transmitter: Arbitration lost.
+ 364   2            // Should not occur.  If so, restart transfer.
+ 365   2            case SMB_MTARBLOST:
+C51 COMPILER V9.05   MAIN3                                                                 03/08/2012 19:07:45 PAGE 7   
 
- 366   2            case SMB_MTARBLOST:
- 367   2               STO = 1;
- 368   2               STA = 1;
- 369   2               break;
- 370   2      
- 371   2            // Master Receiver: Slave address + READ transmitted.  ACK received.
- 372   2            // Set to transmit NACK after next transfer since it will be the last (only)
- 373   2            // byte.
- 374   2            case SMB_MRADDACK:
- 375   2               AA = 0;                       // NACK sent on acknowledge cycle.
- 376   2               break;
- 377   2      
- 378   2            // Master Receiver: Slave address + READ transmitted.  NACK received.
- 379   2            // Slave not responding.  Send repeated start to try again.
- 380   2            case SMB_MRADDNACK:
- 381   2               STO = 0;
- 382   2               STA = 1;
- 383   2               break;
- 384   2      
- 385   2            // Data byte received.  ACK transmitted.
- 386   2            // State should not occur because AA is set to zero in previous state.
- 387   2            // Send STOP if state does occur.
- 388   2            case SMB_MRDBACK:
- 389   2               STO = 1;
- 390   2               SM_BUSY = 0;
- 391   2               break;
- 392   2      
- 393   2            // Data byte received.  NACK transmitted.
- 394   2            // Read operation has completed.  Read data register and send STOP.
- 395   2            case SMB_MRDBNACK:
- 396   2               WORD = SMB0DAT;
- 397   2               STO = 1;
- 398   2               SM_BUSY = 0;                  // Free SMBus
- 399   2               break;
- 400   2      
- 401   2            // All other status codes meaningless in this application. Reset communication.
- 402   2            default:
- 403   2               STO = 1;                      // Reset communication.
- 404   2               SM_BUSY = 0;
- 405   2               break;
- 406   2            }
- 407   1      
- 408   1         SI=0;                               // clear interrupt flag
- 409   1      }
- 410          //-----------------------------------------------------------------------------
- 411          // Timer3 Interrupt Service Routine (ISR)
- 412          //-----------------------------------------------------------------------------
- 413          //
- 414          // A Timer3 interrupt indicates an SMBus SCL low timeout.
- 415          // The SMBus is disabled and re-enabled if a timeout occurs.
- 416          //
- 417          /*
- 418          void Timer3_ISR (void) interrupt 14
- 419          {
- 420             SMB0CN &= ~0x40;                    // Disable SMBus
- 421             SMB0CN |= 0x40;                     // Re-enable SMBus
- 422             TMR3CN &= ~0x80;                    // Clear Timer3 interrupt-pending flag
- 423             SMB_BUSY = 0;                       // Free bus
- 424          }
- 425          */
+ 366   2               STO = 1;
+ 367   2               STA = 1;
+ 368   2               break;
+ 369   2      
+ 370   2            // Master Receiver: Slave address + READ transmitted.  ACK received.
+ 371   2            // Set to transmit NACK after next transfer since it will be the last (only)
+ 372   2            // byte.
+ 373   2            case SMB_MRADDACK:
+ 374   2               AA = 0;                       // NACK sent on acknowledge cycle.
+ 375   2               break;
+ 376   2      
+ 377   2            // Master Receiver: Slave address + READ transmitted.  NACK received.
+ 378   2            // Slave not responding.  Send repeated start to try again.
+ 379   2            case SMB_MRADDNACK:
+ 380   2               STO = 0;
+ 381   2               STA = 1;
+ 382   2               break;
+ 383   2      
+ 384   2            // Data byte received.  ACK transmitted.
+ 385   2            // State should not occur because AA is set to zero in previous state.
+ 386   2            // Send STOP if state does occur.
+ 387   2            case SMB_MRDBACK:
+ 388   2               STO = 1;
+ 389   2               SM_BUSY = 0;
+ 390   2               break;
+ 391   2      
+ 392   2            // Data byte received.  NACK transmitted.
+ 393   2            // Read operation has completed.  Read data register and send STOP.
+ 394   2            case SMB_MRDBNACK:
+ 395   2               WORD = SMB0DAT;
+ 396   2               STO = 1;
+ 397   2               SM_BUSY = 0;                  // Free SMBus
+ 398   2               break;
+ 399   2      
+ 400   2            // All other status codes meaningless in this application. Reset communication.
+ 401   2            default:
+ 402   2               STO = 1;                      // Reset communication.
+ 403   2               SM_BUSY = 0;
+ 404   2               break;
+ 405   2            }
+ 406   1      
+ 407   1         SI=0;                               // clear interrupt flag
+ 408   1      }
+ 409          //-----------------------------------------------------------------------------
+ 410          // Timer3 Interrupt Service Routine (ISR)
+ 411          //-----------------------------------------------------------------------------
+ 412          //
+ 413          // A Timer3 interrupt indicates an SMBus SCL low timeout.
+ 414          // The SMBus is disabled and re-enabled if a timeout occurs.
+ 415          //
+ 416          /*
+ 417          void Timer3_ISR (void) interrupt 14
+ 418          {
+ 419             SMB0CN &= ~0x40;                    // Disable SMBus
+ 420             SMB0CN |= 0x40;                     // Re-enable SMBus
+ 421             TMR3CN &= ~0x80;                    // Clear Timer3 interrupt-pending flag
+ 422             SMB_BUSY = 0;                       // Free bus
+ 423          }
+ 424          */
 
-
-C51 COMPILER V9.05   MAIN3                                                                 03/06/2012 19:19:00 PAGE 8   
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    669    ----
-   CONSTANT SIZE    =    288    ----
+C51 COMPILER V9.05   MAIN3                                                                 03/08/2012 19:07:45 PAGE 8   
+
+   CODE SIZE        =    632    ----
+   CONSTANT SIZE    =    276    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =      6      10

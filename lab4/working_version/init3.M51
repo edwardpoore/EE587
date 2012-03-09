@@ -1,18 +1,21 @@
-BL51 BANKED LINKER/LOCATER V6.22              03/06/2012  19:19:01  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22              03/08/2012  19:07:46  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
-C:\KEIL\C51\BIN\BL51.EXE C:\Users\Danny\Desktop\lab4try2\init3.obj, C:\Users\D
->> anny\Desktop\lab4try2\main3.obj TO C:\Users\Danny\Desktop\lab4try2\init3 RS
->>  (256) PL (68) PW (78)
+C:\KEIL\C51\BIN\BL51.EXE C:\Users\Edward\Documents\ee587\ee587Git\lab4\working
+>> _version\init3.obj, C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_v
+>> ersion\main3.obj TO C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_v
+>> ersion\init3 RS (256) PL (68) PW (78)
 
 
 MEMORY MODEL: SMALL
 
 
 INPUT MODULES INCLUDED:
-  C:\Users\Danny\Desktop\lab4try2\init3.obj (INIT3)
-  C:\Users\Danny\Desktop\lab4try2\main3.obj (MAIN3)
+  C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_version\init3.obj (INI
+>> T3)
+  C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_version\main3.obj (MAI
+>> N3)
   C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
   C:\KEIL\C51\LIB\C51S.LIB (?C?CCASE)
   C:\KEIL\C51\LIB\C51S.LIB (PRINTF)
@@ -37,7 +40,8 @@ INPUT MODULES INCLUDED:
   C:\KEIL\C51\LIB\C51S.LIB (?C?LSTPDATA)
 
 
-LINK MAP OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
+LINK MAP OF MODULE:  C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_ver
+>> sion\init3 (INIT3)
 
 
             TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
@@ -48,12 +52,12 @@ LINK MAP OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
             DATA    0008H     0006H     UNIT         ?DT?MAIN3
             DATA    000EH     0001H     UNIT         ?DT?GETCHAR
                     000FH     0011H                  *** GAP ***
-            BIT     0020H.0   0002H.2   UNIT         _BIT_GROUP_
-            BIT     0022H.2   0000H.1   UNIT         ?BI?MAIN3
-            BIT     0022H.3   0000H.1   UNIT         ?BI?GETCHAR
-                    0022H.4   0000H.4                *** GAP ***
-            DATA    0023H     0032H     UNIT         _DATA_GROUP_
-            IDATA   0055H     0001H     UNIT         ?STACK
+            BIT     0020H.0   0001H.1   UNIT         _BIT_GROUP_
+            BIT     0021H.1   0000H.1   UNIT         ?BI?MAIN3
+            BIT     0021H.2   0000H.1   UNIT         ?BI?GETCHAR
+                    0021H.3   0000H.5                *** GAP ***
+            DATA    0022H     001EH     UNIT         _DATA_GROUP_
+            IDATA   0040H     0001H     UNIT         ?STACK
 
             * * * * * * *   C O D E   M E M O R Y   * * * * * * *
             CODE    0000H     0003H     ABSOLUTE     
@@ -62,51 +66,43 @@ LINK MAP OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
                     003EH     07C2H                  *** GAP ***
             CODE    0800H     035CH     UNIT         ?PR?PRINTF?PRINTF
             CODE    0B5CH     0317H     UNIT         ?PR?SCANF?SCANF
-            CODE    0E73H     0120H     UNIT         ?CO?MAIN3
-            CODE    0F93H     0112H     UNIT         ?C?LIB_CODE
-            CODE    10A5H     00C0H     UNIT         ?PR?SMBUS_ISR?MAIN3
-            CODE    1165H     008CH     UNIT         ?C_C51STARTUP
-            CODE    11F1H     007FH     UNIT         ?PR?MAIN?MAIN3
-BL51 BANKED LINKER/LOCATER V6.22            03/06/2012  19:19:01  PAGE 2
+            CODE    0E73H     0114H     UNIT         ?CO?MAIN3
+BL51 BANKED LINKER/LOCATER V6.22            03/08/2012  19:07:46  PAGE 2
 
 
-            CODE    1270H     0062H     UNIT         ?PR?WRITE_EEPROM?MAIN3
-            CODE    12D2H     0056H     UNIT         ?PR?READ_EEPROM?MAIN3
-            CODE    1328H     0044H     UNIT         ?PR?BLOCK_FILL?MAIN3
-            CODE    136CH     002EH     UNIT         ?PR?DUMP_EEPROM?MAIN3
-            CODE    139AH     0027H     UNIT         ?PR?PUTCHAR?PUTCHAR
-            CODE    13C1H     001DH     UNIT         ?PR?_READ_BYTE?MAIN3
-            CODE    13DEH     001AH     UNIT         ?PR?SYSCLK_INIT?INIT3
-            CODE    13F8H     0017H     UNIT         ?PR?_WRITE_BYTE?MAIN3
-            CODE    140FH     0014H     UNIT         ?PR?UART0_INIT?INIT3
-            CODE    1423H     0013H     UNIT         ?PR?_ISSPACE?ISSPACE
-            CODE    1436H     0011H     UNIT         ?PR?GETCHAR?GETCHAR
-            CODE    1447H     000AH     UNIT         ?PR?_GETKEY?_GETKEY
-            CODE    1451H     0005H     UNIT         ?PR?GETCHAR?UNGETCHAR
-            CODE    1456H     0004H     UNIT         ?C_INITSEG
+            CODE    0F87H     0112H     UNIT         ?C?LIB_CODE
+            CODE    1099H     009BH     UNIT         ?PR?SMBUS_ISR?MAIN3
+            CODE    1134H     008CH     UNIT         ?C_C51STARTUP
+            CODE    11C0H     007FH     UNIT         ?PR?MAIN?MAIN3
+            CODE    123FH     0062H     UNIT         ?PR?WRITE_EEPROM?MAIN3
+            CODE    12A1H     0056H     UNIT         ?PR?READ_EEPROM?MAIN3
+            CODE    12F7H     0044H     UNIT         ?PR?BLOCK_FILL?MAIN3
+            CODE    133BH     002EH     UNIT         ?PR?DUMP_EEPROM?MAIN3
+            CODE    1369H     0027H     UNIT         ?PR?PUTCHAR?PUTCHAR
+            CODE    1390H     001DH     UNIT         ?PR?_READ_BYTE?MAIN3
+            CODE    13ADH     001AH     UNIT         ?PR?SYSCLK_INIT?INIT3
+            CODE    13C7H     0017H     UNIT         ?PR?_WRITE_BYTE?MAIN3
+            CODE    13DEH     0014H     UNIT         ?PR?UART0_INIT?INIT3
+            CODE    13F2H     0013H     UNIT         ?PR?_ISSPACE?ISSPACE
+            CODE    1405H     0011H     UNIT         ?PR?GETCHAR?GETCHAR
+            CODE    1416H     000AH     UNIT         ?PR?_GETKEY?_GETKEY
+            CODE    1420H     0005H     UNIT         ?PR?GETCHAR?UNGETCHAR
+            CODE    1425H     0004H     UNIT         ?C_INITSEG
 
 
 
-OVERLAY MAP OF MODULE:   C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
+OVERLAY MAP OF MODULE:   C:\Users\Edward\Documents\ee587\ee587Git\lab4\working
+>> _version\init3 (INIT3)
 
 
 SEGMENT                           BIT_GROUP          DATA_GROUP 
   +--> CALLED SEGMENT          START    LENGTH     START    LENGTH
 ------------------------------------------------------------------
-?PR?SMBUS_ISR?MAIN3            -----    -----      -----    -----
-  +--> ?CO?MAIN3
-  +--> ?PR?PRINTF?PRINTF
-
-?PR?PRINTF?PRINTF              0021H.1  0001H.1    003BH    0014H
-  +--> ?PR?PUTCHAR?PUTCHAR
-
-*** NEW ROOT ***************************************************
-
 ?C_C51STARTUP                  -----    -----      -----    -----
   +--> ?PR?MAIN?MAIN3
   +--> ?C_INITSEG
 
-?PR?MAIN?MAIN3                 -----    -----      0037H    0001H
+?PR?MAIN?MAIN3                 -----    -----      0022H    0001H
   +--> ?PR?SYSCLK_INIT?INIT3
   +--> ?PR?UART0_INIT?INIT3
   +--> ?CO?MAIN3
@@ -117,36 +113,39 @@ SEGMENT                           BIT_GROUP          DATA_GROUP
   +--> ?PR?READ_EEPROM?MAIN3
   +--> ?PR?WRITE_EEPROM?MAIN3
 
+?PR?PRINTF?PRINTF              0020H.0  0001H.1    0026H    0014H
+  +--> ?PR?PUTCHAR?PUTCHAR
+
 ?PR?GETCHAR?GETCHAR            -----    -----      -----    -----
   +--> ?PR?_GETKEY?_GETKEY
   +--> ?PR?PUTCHAR?PUTCHAR
 
-?PR?DUMP_EEPROM?MAIN3          -----    -----      0038H    0001H
+?PR?DUMP_EEPROM?MAIN3          -----    -----      0023H    0001H
   +--> ?CO?MAIN3
   +--> ?PR?PRINTF?PRINTF
   +--> ?PR?_READ_BYTE?MAIN3
 
-?PR?BLOCK_FILL?MAIN3           -----    -----      0038H    0003H
+?PR?BLOCK_FILL?MAIN3           -----    -----      0023H    0003H
   +--> ?CO?MAIN3
   +--> ?PR?PRINTF?PRINTF
   +--> ?PR?SCANF?SCANF
   +--> ?PR?_WRITE_BYTE?MAIN3
 
-?PR?SCANF?SCANF                0021H.1  0000H.6    003BH    001AH
+?PR?SCANF?SCANF                0020H.0  0000H.6    0026H    001AH
   +--> ?PR?GETCHAR?UNGETCHAR
   +--> ?PR?_ISSPACE?ISSPACE
-BL51 BANKED LINKER/LOCATER V6.22            03/06/2012  19:19:01  PAGE 3
-
-
   +--> ?PR?GETCHAR?GETCHAR
+BL51 BANKED LINKER/LOCATER V6.22            03/08/2012  19:07:46  PAGE 3
 
-?PR?READ_EEPROM?MAIN3          -----    -----      0038H    0002H
+
+
+?PR?READ_EEPROM?MAIN3          -----    -----      0023H    0002H
   +--> ?CO?MAIN3
   +--> ?PR?PRINTF?PRINTF
   +--> ?PR?SCANF?SCANF
   +--> ?PR?_READ_BYTE?MAIN3
 
-?PR?WRITE_EEPROM?MAIN3         -----    -----      0038H    0003H
+?PR?WRITE_EEPROM?MAIN3         -----    -----      0023H    0003H
   +--> ?CO?MAIN3
   +--> ?PR?PRINTF?PRINTF
   +--> ?PR?SCANF?SCANF
@@ -154,7 +153,8 @@ SEGMENT                           BIT_GROUP          DATA_GROUP
 
 
 
-SYMBOL TABLE OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
+SYMBOL TABLE OF MODULE:  C:\Users\Edward\Documents\ee587\ee587Git\lab4\working
+>> _version\init3 (INIT3)
 
   VALUE           TYPE          NAME
   ----------------------------------
@@ -174,9 +174,9 @@ SYMBOL TABLE OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
   B:0098H.1       PUBLIC        TI0
   D:008DH         PUBLIC        TH1
   D:00B1H         PUBLIC        OSCXCN
-  C:13DEH         PUBLIC        SYSCLK_Init
+  C:13ADH         PUBLIC        SYSCLK_Init
   B:0088H.6       PUBLIC        TR1
-  C:140FH         PUBLIC        UART0_Init
+  C:13DEH         PUBLIC        UART0_Init
   D:0098H         PUBLIC        SCON0
   D:00C8H         PUBLIC        T2CON
   D:008EH         PUBLIC        CKCON
@@ -185,28 +185,28 @@ SYMBOL TABLE OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
   -------         DO            
   D:0006H         SYMBOL        i
   -------         ENDDO         
-  C:13DEH         LINE#         47
-  C:13DEH         LINE#         48
-  C:13DEH         LINE#         51
-  C:13E1H         LINE#         54
-  C:13EFH         LINE#         56
-  C:13F4H         LINE#         58
-  C:13F7H         LINE#         61
+  C:13ADH         LINE#         47
+  C:13ADH         LINE#         48
+  C:13ADH         LINE#         51
+  C:13B0H         LINE#         54
+  C:13BEH         LINE#         56
+  C:13C3H         LINE#         58
+  C:13C6H         LINE#         61
   -------         ENDPROC       SYSCLK_INIT
   -------         PROC          UART0_INIT
-  C:140FH         LINE#         86
-  C:140FH         LINE#         87
-  C:140FH         LINE#         88
-  C:1412H         LINE#         89
-  C:1415H         LINE#         90
-  C:1418H         LINE#         91
-  C:141AH         LINE#         92
-  C:141DH         LINE#         93
-  C:1420H         LINE#         94
-BL51 BANKED LINKER/LOCATER V6.22            03/06/2012  19:19:01  PAGE 4
+  C:13DEH         LINE#         86
+  C:13DEH         LINE#         87
+  C:13DEH         LINE#         88
+  C:13E1H         LINE#         89
+  C:13E4H         LINE#         90
+  C:13E7H         LINE#         91
+  C:13E9H         LINE#         92
+  C:13ECH         LINE#         93
+  C:13EFH         LINE#         94
+BL51 BANKED LINKER/LOCATER V6.22            03/08/2012  19:07:46  PAGE 4
 
 
-  C:1422H         LINE#         95
+  C:13F1H         LINE#         95
   -------         ENDPROC       UART0_INIT
   -------         ENDMOD        INIT3
 
@@ -218,25 +218,25 @@ SYMBOL TABLE OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
   D:00FFH         PUBLIC        WDTCN
   D:00E6H         PUBLIC        EIE1
   B:00A8H.7       PUBLIC        EA
-  C:12D2H         PUBLIC        read_eeprom
+  C:12A1H         PUBLIC        read_eeprom
   D:0009H         PUBLIC        chip_select
   D:00A5H         PUBLIC        P1MDOUT
-  C:1328H         PUBLIC        block_fill
-  C:1270H         PUBLIC        write_eeprom
+  C:12F7H         PUBLIC        block_fill
+  C:123FH         PUBLIC        write_eeprom
   B:00C0H.3       PUBLIC        SI
   D:000AH         PUBLIC        LOW_ADD
   D:00E1H         PUBLIC        XBR0
   D:00E3H         PUBLIC        XBR2
-  C:136CH         PUBLIC        dump_eeprom
+  C:133BH         PUBLIC        dump_eeprom
   D:00C0H         PUBLIC        SMB0CN
-  C:11F1H         PUBLIC        main
+  C:11C0H         PUBLIC        main
   D:00CFH         PUBLIC        SMB0CR
-  C:13C1H         PUBLIC        _read_byte
+  C:1390H         PUBLIC        _read_byte
   D:000BH         PUBLIC        WORD
-  C:13F8H         PUBLIC        _write_byte
-  B:0022H.2       PUBLIC        SM_BUSY
+  C:13C7H         PUBLIC        _write_byte
+  B:0021H.1       PUBLIC        SM_BUSY
   D:000CH         PUBLIC        HIGH_ADD
-  C:10A5H         PUBLIC        SMBUS_ISR
+  C:1099H         PUBLIC        SMBUS_ISR
   D:000DH         PUBLIC        BYTE_NUMBER
   B:00C0H.5       PUBLIC        STA
   D:00C2H         PUBLIC        SMB0DAT
@@ -244,219 +244,218 @@ SYMBOL TABLE OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
   D:00C1H         PUBLIC        SMB0STA
   -------         PROC          MAIN
   -------         DO            
-  D:0037H         SYMBOL        keypress
+  D:0022H         SYMBOL        keypress
   -------         ENDDO         
-  C:11F1H         LINE#         107
-  C:11F1H         LINE#         108
-  C:11F1H         LINE#         111
-  C:11F4H         LINE#         112
-  C:11F7H         LINE#         115
-  C:11FAH         LINE#         117
-  C:11FDH         LINE#         123
-  C:1200H         LINE#         124
-  C:1203H         LINE#         125
-  C:1206H         LINE#         127
-  C:1209H         LINE#         129
-  C:120CH         LINE#         131
-  C:120FH         LINE#         132
-  C:1211H         LINE#         134
-  C:1213H         LINE#         142
-  C:121CH         LINE#         143
-  C:1225H         LINE#         145
-  C:1225H         LINE#         147
-  C:122EH         LINE#         149
-  C:1233H         LINE#         151
-  C:123CH         LINE#         154
-  C:124EH         LINE#         155
-  C:1253H         LINE#         156
-  C:1258H         LINE#         157
-  C:125DH         LINE#         158
-BL51 BANKED LINKER/LOCATER V6.22            03/06/2012  19:19:01  PAGE 5
+  C:11C0H         LINE#         107
+  C:11C0H         LINE#         108
+  C:11C0H         LINE#         111
+  C:11C3H         LINE#         112
+  C:11C6H         LINE#         115
+  C:11C9H         LINE#         117
+  C:11CCH         LINE#         123
+  C:11CFH         LINE#         124
+  C:11D2H         LINE#         125
+  C:11D5H         LINE#         127
+  C:11D8H         LINE#         129
+  C:11DBH         LINE#         131
+  C:11DEH         LINE#         132
+  C:11E0H         LINE#         134
+  C:11E2H         LINE#         142
+  C:11EBH         LINE#         143
+  C:11F4H         LINE#         145
+  C:11F4H         LINE#         147
+  C:11FDH         LINE#         149
+  C:1202H         LINE#         151
+  C:120BH         LINE#         154
+  C:121DH         LINE#         155
+  C:1222H         LINE#         156
+  C:1227H         LINE#         157
+  C:122CH         LINE#         158
+BL51 BANKED LINKER/LOCATER V6.22            03/08/2012  19:07:46  PAGE 5
 
 
-  C:1262H         LINE#         159
-  C:1262H         LINE#         160
-  C:1262H         LINE#         161
-  C:126EH         LINE#         162
+  C:1231H         LINE#         159
+  C:1231H         LINE#         160
+  C:1231H         LINE#         161
+  C:123DH         LINE#         162
   -------         ENDPROC       MAIN
   -------         PROC          DUMP_EEPROM
   -------         DO            
-  D:0038H         SYMBOL        i
+  D:0023H         SYMBOL        i
   -------         ENDDO         
-  C:136CH         LINE#         173
-  C:136CH         LINE#         174
-  C:136CH         LINE#         177
-  C:1375H         LINE#         178
-  C:1378H         LINE#         179
-  C:1388H         LINE#         180
-  C:1391H         LINE#         181
+  C:133BH         LINE#         173
+  C:133BH         LINE#         174
+  C:133BH         LINE#         177
+  C:1344H         LINE#         178
+  C:1347H         LINE#         179
+  C:1357H         LINE#         180
+  C:1360H         LINE#         181
   -------         ENDPROC       DUMP_EEPROM
   -------         PROC          BLOCK_FILL
   -------         DO            
-  D:0038H         SYMBOL        i
-  D:0039H         SYMBOL        data_in
+  D:0023H         SYMBOL        i
+  D:0024H         SYMBOL        data_in
   -------         ENDDO         
-  C:1328H         LINE#         186
-  C:1328H         LINE#         187
-  C:1328H         LINE#         191
-  C:1331H         LINE#         193
-  C:1334H         LINE#         194
-  C:1340H         LINE#         195
-  C:1352H         LINE#         196
-  C:1359H         LINE#         197
-  C:1362H         LINE#         198
-  C:136BH         LINE#         199
+  C:12F7H         LINE#         186
+  C:12F7H         LINE#         187
+  C:12F7H         LINE#         191
+  C:1300H         LINE#         193
+  C:1303H         LINE#         194
+  C:130FH         LINE#         195
+  C:1321H         LINE#         196
+  C:1328H         LINE#         197
+  C:1331H         LINE#         198
+  C:133AH         LINE#         199
   -------         ENDPROC       BLOCK_FILL
   -------         PROC          READ_EEPROM
   -------         DO            
-  D:0038H         SYMBOL        address
+  D:0023H         SYMBOL        address
   -------         ENDDO         
-  C:12D2H         LINE#         203
-  C:12D2H         LINE#         204
-  C:12D2H         LINE#         207
-  C:12DBH         LINE#         208
-  C:12EDH         LINE#         212
-  C:12F6H         LINE#         214
-  C:130CH         LINE#         215
-  C:1312H         LINE#         216
-  C:1314H         LINE#         217
-  C:1327H         LINE#         218
-  C:1327H         LINE#         219
+  C:12A1H         LINE#         203
+  C:12A1H         LINE#         204
+  C:12A1H         LINE#         207
+  C:12AAH         LINE#         208
+  C:12BCH         LINE#         212
+  C:12C5H         LINE#         214
+  C:12DBH         LINE#         215
+  C:12E1H         LINE#         216
+  C:12E3H         LINE#         217
+  C:12F6H         LINE#         218
+  C:12F6H         LINE#         219
   -------         ENDPROC       READ_EEPROM
   -------         PROC          WRITE_EEPROM
   -------         DO            
-  D:0038H         SYMBOL        address
-  D:003AH         SYMBOL        databyte
+  D:0023H         SYMBOL        address
+  D:0025H         SYMBOL        databyte
   -------         ENDDO         
-  C:1270H         LINE#         223
-  C:1270H         LINE#         224
-  C:1270H         LINE#         228
-  C:1279H         LINE#         229
-  C:128BH         LINE#         233
-  C:1294H         LINE#         235
-  C:12A6H         LINE#         236
-  C:12AFH         LINE#         237
-  C:12AFH         LINE#         238
-  C:12B8H         LINE#         239
-  C:12CAH         LINE#         240
-BL51 BANKED LINKER/LOCATER V6.22            03/06/2012  19:19:01  PAGE 6
+  C:123FH         LINE#         223
+  C:123FH         LINE#         224
+  C:123FH         LINE#         228
+  C:1248H         LINE#         229
+  C:125AH         LINE#         233
+  C:1263H         LINE#         235
+  C:1275H         LINE#         236
+  C:127EH         LINE#         237
+  C:127EH         LINE#         238
+  C:1287H         LINE#         239
+  C:1299H         LINE#         240
+BL51 BANKED LINKER/LOCATER V6.22            03/08/2012  19:07:46  PAGE 6
 
 
-  C:12D1H         LINE#         241
-  C:12D1H         LINE#         242
+  C:12A0H         LINE#         241
+  C:12A0H         LINE#         242
   -------         ENDPROC       WRITE_EEPROM
   -------         PROC          _WRITE_BYTE
   D:0007H         SYMBOL        byte_address
   D:0005H         SYMBOL        out_byte
-  C:13F8H         LINE#         243
-  C:13F8H         LINE#         244
-  C:13F8H         LINE#         245
-  C:13FBH         LINE#         246
-  C:13FDH         LINE#         247
-  C:1400H         LINE#         250
-  C:1403H         LINE#         251
-  C:1406H         LINE#         253
-  C:1408H         LINE#         254
-  C:140AH         LINE#         256
-  C:140CH         LINE#         259
-  C:140EH         LINE#         261
+  C:13C7H         LINE#         243
+  C:13C7H         LINE#         244
+  C:13C7H         LINE#         245
+  C:13CAH         LINE#         246
+  C:13CCH         LINE#         247
+  C:13CFH         LINE#         250
+  C:13D2H         LINE#         251
+  C:13D5H         LINE#         253
+  C:13D7H         LINE#         254
+  C:13D9H         LINE#         256
+  C:13DBH         LINE#         259
+  C:13DDH         LINE#         261
   -------         ENDPROC       _WRITE_BYTE
   -------         PROC          _READ_BYTE
   D:0007H         SYMBOL        byte_address
-  C:13C1H         LINE#         268
-  C:13C1H         LINE#         269
-  C:13C1H         LINE#         270
-  C:13C4H         LINE#         271
-  C:13C6H         LINE#         272
-  C:13C9H         LINE#         274
-  C:13CCH         LINE#         275
-  C:13D2H         LINE#         277
-  C:13D4H         LINE#         278
-  C:13D6H         LINE#         281
-  C:13D8H         LINE#         282
-  C:13DBH         LINE#         283
-  C:13DDH         LINE#         284
+  C:1390H         LINE#         268
+  C:1390H         LINE#         269
+  C:1390H         LINE#         270
+  C:1393H         LINE#         271
+  C:1395H         LINE#         272
+  C:1398H         LINE#         274
+  C:139BH         LINE#         275
+  C:13A1H         LINE#         277
+  C:13A3H         LINE#         278
+  C:13A5H         LINE#         281
+  C:13A7H         LINE#         282
+  C:13AAH         LINE#         283
+  C:13ACH         LINE#         284
   -------         ENDPROC       _READ_BYTE
   -------         PROC          SMBUS_ISR
-  C:10A5H         LINE#         294
-  C:10C2H         LINE#         296
-  C:10EDH         LINE#         302
-  C:10EDH         LINE#         303
-  C:10F3H         LINE#         304
-  C:10F5H         LINE#         305
-  C:10FEH         LINE#         306
-  C:1100H         LINE#         311
-  C:1100H         LINE#         312
-  C:1103H         LINE#         313
-  C:1105H         LINE#         314
-  C:1107H         LINE#         317
-  C:1107H         LINE#         318
-  C:110AH         LINE#         320
-  C:110CH         LINE#         324
-  C:110CH         LINE#         325
-  C:110CH         LINE#         326
-  C:110CH         LINE#         327
-  C:110EH         LINE#         334
-  C:110EH         LINE#         335
-  C:1116H         LINE#         336
-  C:1116H         LINE#         337
-  C:1119H         LINE#         338
-  C:111BH         LINE#         339
-  C:111DH         LINE#         340
-  C:111DH         LINE#         341
-  C:1122H         LINE#         342
-  C:1122H         LINE#         343
-  C:1122H         LINE#         345
-BL51 BANKED LINKER/LOCATER V6.22            03/06/2012  19:19:01  PAGE 7
+  C:1099H         LINE#         294
+  C:10A8H         LINE#         296
+  C:10D3H         LINE#         302
+  C:10D3H         LINE#         303
+  C:10D9H         LINE#         304
+  C:10DBH         LINE#         305
+  C:10DDH         LINE#         310
+  C:10DDH         LINE#         311
+  C:10E0H         LINE#         312
+  C:10E2H         LINE#         313
+  C:10E4H         LINE#         316
+  C:10E4H         LINE#         317
+  C:10E7H         LINE#         319
+  C:10E9H         LINE#         323
+  C:10E9H         LINE#         324
+  C:10E9H         LINE#         325
+  C:10E9H         LINE#         326
+  C:10EBH         LINE#         333
+  C:10EBH         LINE#         334
+  C:10F3H         LINE#         335
+  C:10F3H         LINE#         336
+  C:10F6H         LINE#         337
+  C:10F8H         LINE#         338
+  C:10FAH         LINE#         339
+  C:10FAH         LINE#         340
+  C:10FFH         LINE#         341
+  C:10FFH         LINE#         342
+  C:10FFH         LINE#         344
+  C:1101H         LINE#         345
+BL51 BANKED LINKER/LOCATER V6.22            03/08/2012  19:07:46  PAGE 7
 
 
-  C:1124H         LINE#         346
-  C:1127H         LINE#         347
-  C:1129H         LINE#         348
-  C:1129H         LINE#         349
-  C:112BH         LINE#         350
-  C:112BH         LINE#         359
-  C:112BH         LINE#         360
-  C:112BH         LINE#         361
-  C:112BH         LINE#         362
-  C:112DH         LINE#         366
-  C:112DH         LINE#         367
-  C:112FH         LINE#         368
-  C:1131H         LINE#         369
-  C:1133H         LINE#         374
-  C:1133H         LINE#         375
-  C:1135H         LINE#         376
-  C:1137H         LINE#         380
-  C:1137H         LINE#         381
-  C:1139H         LINE#         382
-  C:113BH         LINE#         383
-  C:113DH         LINE#         388
-  C:113DH         LINE#         389
-  C:113DH         LINE#         390
-  C:113DH         LINE#         391
-  C:113FH         LINE#         395
-  C:113FH         LINE#         396
-  C:1142H         LINE#         397
-  C:1142H         LINE#         398
-  C:1142H         LINE#         399
-  C:1144H         LINE#         402
-  C:1146H         LINE#         404
-  C:1148H         LINE#         405
-  C:1148H         LINE#         406
-  C:1148H         LINE#         408
-  C:114AH         LINE#         409
+  C:1104H         LINE#         346
+  C:1106H         LINE#         347
+  C:1106H         LINE#         348
+  C:1108H         LINE#         349
+  C:1108H         LINE#         358
+  C:1108H         LINE#         359
+  C:1108H         LINE#         360
+  C:1108H         LINE#         361
+  C:110AH         LINE#         365
+  C:110AH         LINE#         366
+  C:110CH         LINE#         367
+  C:110EH         LINE#         368
+  C:1110H         LINE#         373
+  C:1110H         LINE#         374
+  C:1112H         LINE#         375
+  C:1114H         LINE#         379
+  C:1114H         LINE#         380
+  C:1116H         LINE#         381
+  C:1118H         LINE#         382
+  C:111AH         LINE#         387
+  C:111AH         LINE#         388
+  C:111AH         LINE#         389
+  C:111AH         LINE#         390
+  C:111CH         LINE#         394
+  C:111CH         LINE#         395
+  C:111FH         LINE#         396
+  C:111FH         LINE#         397
+  C:111FH         LINE#         398
+  C:1121H         LINE#         401
+  C:1123H         LINE#         403
+  C:1125H         LINE#         404
+  C:1125H         LINE#         405
+  C:1125H         LINE#         407
+  C:1127H         LINE#         408
   -------         ENDPROC       SMBUS_ISR
   -------         ENDMOD        MAIN3
 
   -------         MODULE        ?C?CCASE
-  C:0F93H         PUBLIC        ?C?CCASE
+  C:0F87H         PUBLIC        ?C?CCASE
   -------         ENDMOD        ?C?CCASE
 
   -------         MODULE        PRINTF
-  D:003BH         PUBLIC        ?_PRINTF517?BYTE
-  D:003BH         PUBLIC        ?_PRINTF?BYTE
-  D:003BH         PUBLIC        ?_SPRINTF517?BYTE
-  D:003BH         PUBLIC        ?_SPRINTF?BYTE
+  D:0026H         PUBLIC        ?_PRINTF517?BYTE
+  D:0026H         PUBLIC        ?_PRINTF?BYTE
+  D:0026H         PUBLIC        ?_SPRINTF517?BYTE
+  D:0026H         PUBLIC        ?_SPRINTF?BYTE
   C:0862H         PUBLIC        _PRINTF
   C:0862H         PUBLIC        _PRINTF517
   C:085CH         PUBLIC        _SPRINTF
@@ -464,103 +463,98 @@ SYMBOL TABLE OF MODULE:  C:\Users\Danny\Desktop\lab4try2\init3 (INIT3)
   -------         ENDMOD        PRINTF
 
   -------         MODULE        GETCHAR
-  B:0022H.3       PUBLIC        ?C?CHARLOADED
+  B:0021H.2       PUBLIC        ?C?CHARLOADED
   D:000EH         PUBLIC        ?_UNGETCHAR?BYTE
-  C:1436H         PUBLIC        GETCHAR
+  C:1405H         PUBLIC        GETCHAR
   -------         ENDMOD        GETCHAR
 
   -------         MODULE        SCANF
-  D:003BH         PUBLIC        ?_SCANF517?BYTE
-  D:003BH         PUBLIC        ?_SCANF?BYTE
-  D:003BH         PUBLIC        ?_SSCANF517?BYTE
-  D:003BH         PUBLIC        ?_SSCANF?BYTE
+  D:0026H         PUBLIC        ?_SCANF517?BYTE
+  D:0026H         PUBLIC        ?_SCANF?BYTE
+  D:0026H         PUBLIC        ?_SSCANF517?BYTE
+  D:0026H         PUBLIC        ?_SSCANF?BYTE
   C:0BDEH         PUBLIC        _SCANF
-BL51 BANKED LINKER/LOCATER V6.22            03/06/2012  19:19:01  PAGE 8
-
-
   C:0BDEH         PUBLIC        _SCANF517
+BL51 BANKED LINKER/LOCATER V6.22            03/08/2012  19:07:46  PAGE 8
+
+
   C:0BDAH         PUBLIC        _SSCANF
   C:0BDAH         PUBLIC        _SSCANF517
   -------         ENDMOD        SCANF
 
   -------         MODULE        ?C?CLDPTR
-  C:0FB9H         PUBLIC        ?C?CLDPTR
+  C:0FADH         PUBLIC        ?C?CLDPTR
   -------         ENDMOD        ?C?CLDPTR
 
   -------         MODULE        ?C?CLDOPTR
-  C:0FD2H         PUBLIC        ?C?CLDOPTR
+  C:0FC6H         PUBLIC        ?C?CLDOPTR
   -------         ENDMOD        ?C?CLDOPTR
 
   -------         MODULE        ?C?CSTPTR
-  C:0FFFH         PUBLIC        ?C?CSTPTR
+  C:0FF3H         PUBLIC        ?C?CSTPTR
   -------         ENDMOD        ?C?CSTPTR
 
   -------         MODULE        ?C?ISTPTR
-  C:1011H         PUBLIC        ?C?ISTPTR
+  C:1005H         PUBLIC        ?C?ISTPTR
   -------         ENDMOD        ?C?ISTPTR
 
   -------         MODULE        ?C?LNEG
-  C:1030H         PUBLIC        ?C?LNEG
+  C:1024H         PUBLIC        ?C?LNEG
   -------         ENDMOD        ?C?LNEG
 
   -------         MODULE        ?C?LSTPTR
-  C:103EH         PUBLIC        ?C?LSTPTR
+  C:1032H         PUBLIC        ?C?LSTPTR
   -------         ENDMOD        ?C?LSTPTR
 
   -------         MODULE        ?C?PLDIDATA
-  C:1058H         PUBLIC        ?C?PLDIDATA
+  C:104CH         PUBLIC        ?C?PLDIDATA
   -------         ENDMOD        ?C?PLDIDATA
 
   -------         MODULE        ?C?PLDIIDATA
-  C:1061H         PUBLIC        ?C?PLDIIDATA
+  C:1055H         PUBLIC        ?C?PLDIIDATA
   -------         ENDMOD        ?C?PLDIIDATA
 
   -------         MODULE        ?C?PILDIDATA
-  C:1071H         PUBLIC        ?C?PILDIDATA
+  C:1065H         PUBLIC        ?C?PILDIDATA
   -------         ENDMOD        ?C?PILDIDATA
 
   -------         MODULE        PUTCHAR
-  C:139AH         PUBLIC        _PUTCHAR
+  C:1369H         PUBLIC        _PUTCHAR
   -------         ENDMOD        PUTCHAR
 
   -------         MODULE        _GETKEY
-  C:1447H         PUBLIC        _GETKEY
+  C:1416H         PUBLIC        _GETKEY
   -------         ENDMOD        _GETKEY
 
   -------         MODULE        UNGETC
-  C:1451H         PUBLIC        _UNGETCHAR
+  C:1420H         PUBLIC        _UNGETCHAR
   -------         ENDMOD        UNGETC
 
   -------         MODULE        ISSPACE
-  C:1423H         PUBLIC        _isspace
+  C:13F2H         PUBLIC        _isspace
   -------         ENDMOD        ISSPACE
 
   -------         MODULE        ?C?LSTIDATA
-  C:1081H         PUBLIC        ?C?LSTIDATA
+  C:1075H         PUBLIC        ?C?LSTIDATA
   -------         ENDMOD        ?C?LSTIDATA
 
   -------         MODULE        ?C?LSTXDATA
-  C:108DH         PUBLIC        ?C?LSTXDATA
+  C:1081H         PUBLIC        ?C?LSTXDATA
   -------         ENDMOD        ?C?LSTXDATA
 
-BL51 BANKED LINKER/LOCATER V6.22            03/06/2012  19:19:01  PAGE 9
-
-
   -------         MODULE        ?C?LSTPDATA
-  C:1099H         PUBLIC        ?C?LSTPDATA
+BL51 BANKED LINKER/LOCATER V6.22            03/08/2012  19:07:46  PAGE 9
+
+
+  C:108DH         PUBLIC        ?C?LSTPDATA
   -------         ENDMOD        ?C?LSTPDATA
 
-*** WARNING L15: MULTIPLE CALL TO SEGMENT
-    SEGMENT: ?PR?PRINTF?PRINTF
-    CALLER1: ?PR?SMBUS_ISR?MAIN3
-    CALLER2: ?C_C51STARTUP
-
 ******************************************************************************
 >> 
-* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 03F1H BYTE (49%) *
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 03C0H BYTE (46%) *
 >> 
 ******************************************************************************
 >> 
 
-Program Size: data=68.4 xdata=0 code=3168
-LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)
+Program Size: data=47.3 xdata=0 code=3119
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,20 +1,15 @@
 
 BL51 BANKED LINKER/LOCATER V6.22 - SN: Eval Version
 COPYRIGHT KEIL ELEKTRONIK GmbH 1987 - 2009
-"C:\Users\Danny\Desktop\lab4try2\init3.obj",
-"C:\Users\Danny\Desktop\lab4try2\main3.obj"  TO "C:\Users\Danny\Desktop\lab4try2\init3" RS(256) PL(68) PW(78) 
-
-*** WARNING L15: MULTIPLE CALL TO SEGMENT
-    SEGMENT: ?PR?PRINTF?PRINTF
-    CALLER1: ?PR?SMBUS_ISR?MAIN3
-    CALLER2: ?C_C51STARTUP
+"C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_version\init3.obj",
+"C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_version\main3.obj"  TO "C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_version\init3" RS(256) PL(68) PW(78) 
 
 ******************************************************************************
-* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 03F1H BYTE (49%) *
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 03C0H BYTE (46%) *
 ******************************************************************************
 
 >> 
 >> 
 >> 
-Program Size: data=68.4 xdata=0 code=3168
-LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)
+Program Size: data=47.3 xdata=0 code=3119
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

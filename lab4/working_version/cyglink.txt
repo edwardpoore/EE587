@@ -1,2 +1,2 @@
-"C:\Users\Danny\Desktop\lab4try2\init3.obj",
-"C:\Users\Danny\Desktop\lab4try2\main3.obj"  TO "C:\Users\Danny\Desktop\lab4try2\init3" RS(256) PL(68) PW(78) 
+"C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_version\init3.obj",
+"C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_version\main3.obj"  TO "C:\Users\Edward\Documents\ee587\ee587Git\lab4\working_version\init3" RS(256) PL(68) PW(78) 
