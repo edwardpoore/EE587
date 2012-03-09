@@ -6,9 +6,8 @@
  * Pin 1.0 -> Pin 0.2
  * Pin 1.1 -> Pin 0.3
  *
- * This code will solve problems 1 and 2 in the experiment.
+ * This code will solve problem 3 in the experiment.
 */
-
 
 //-----------------------------------------------------------------------------
 // Includes
@@ -21,9 +20,6 @@
 //use p1.0 and p1.1 to trigger interrupts
 sbit zero = P1^0;
 sbit one = P1^1;
-
-unsigned int longInt = 0; //flag to cause a long latecy interrupt
-unsigned int x = 5; //variable to divide
 
 
 //-----------------------------------------------------------------------------
@@ -42,7 +38,7 @@ void main (void)
    XBR1 = 0x14;
    XBR2 = 0xC0;                     // Enable crossbar
    P1MDOUT = 0x03;                  //1.0 and 1.1 are push pull to set interrupts
-   //IP = 0x04; //set int1 priority to high
+   IP = 0x04; //set int1 priority to high
 
    zero = 0x01; //pin is initially high
    one = 0x01; //init
@@ -55,26 +51,19 @@ void main (void)
 
    while (1) {
 
-       printf("What would you like to do? (l,s,h):");
+       printf("What would you like to do? (i,h):");
        keypress = getchar();
 
        printf("\n");
        switch(keypress) {
 
            case ' ':;
-           case 's': //short interrupt = first interrupt with longInt = 0
+           case 'i': // interrupt = first interrupt with second interrupt taking place during the first
                zero = 0x00;
                break;
 
-           case 'l': //long interrupt = interrupt -> trigger second interrupt -> return to a divide -> second interrupt
-               longInt =1; //set the flag to cause a long interrupt
-               zero = 0x00; //trigger first interrupt
-               x=5/1; //a division for the zero interrupt to return to before the one interrupt is called
-               break;
-
            case 'h': //help
-               printf ("Press l to cause a long latency interrupt\n");
-               printf ("Press s to cause a short latency interrupt\n");
+               printf ("Press i to trigger the interrupt chain\n");
                break;
 
            default:
@@ -89,17 +78,14 @@ void isr_zero(void) interrupt 0 //interrupt function for int0
 {
    zero = 0x01; //clear the interrupt
    printf ("Interrupt zero called.\n");
-   if(longInt)
-   {
-        one = 0x00; //cause an interrupt on the second line (long latency)
-   }
+   one = 0x00; //cause the second interrupt
+   printf ("Back in the first interrupt.\n");
 }
 
 void isr_one(void) interrupt 2 //interrupt function for int1
 {
   one = 0x01; //clear the interrupt
   printf ("Interrupt one called.\n");
-  longInt = 0; //reset longInt
 }
 
 
