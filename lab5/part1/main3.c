@@ -23,7 +23,7 @@ sbit zero = P1^0;
 sbit one = P1^1;
 
 unsigned int longInt = 0; //flag to cause a long latecy interrupt
-unsigned int x = 5; //variable to divide
+float x = 5.0; //variable to divide
 
 
 //-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ void main (void)
    while (1) {
 
        printf("What would you like to do? (l,s,h):");
-       keypress = getchar();
+       keypress = 'l'; //getchar();
 
        printf("\n");
        switch(keypress) {
@@ -69,7 +69,7 @@ void main (void)
            case 'l': //long interrupt = interrupt -> trigger second interrupt -> return to a divide -> second interrupt
                longInt =1; //set the flag to cause a long interrupt
                zero = 0x00; //trigger first interrupt
-               x=5/1; //a division for the zero interrupt to return to before the one interrupt is called
+               x=5.0/x; //a division for the zero interrupt to return to before the one interrupt is called
                break;
 
            case 'h': //help
@@ -87,9 +87,11 @@ void main (void)
 
 void isr_zero(void) interrupt 0 //interrupt function for int0
 {
+   //int i;
+   //for (i=0;i<1000000;i++); //delay
    zero = 0x01; //clear the interrupt
    printf ("Interrupt zero called.\n");
-   if(longInt)
+   if(longInt > 0)
    {
         one = 0x00; //cause an interrupt on the second line (long latency)
    }
