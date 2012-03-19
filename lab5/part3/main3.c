@@ -86,6 +86,7 @@ void isr_one(void) interrupt 2 //interrupt function for int1
 {
   one = 0x01; //clear the interrupt
   printf ("Interrupt one called.\n");
+  printf ("Going back to interrupt 0...\n");
 }
 
 
