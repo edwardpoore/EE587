@@ -3,5 +3,5 @@
 
 void SYSCLK_Init (void);
 
-void UART0_Init (void);
+void UART1_Init (void);
 
