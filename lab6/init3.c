@@ -45,12 +45,12 @@ void SYSCLK_Init (void)
 }
 
 //-----------------------------------------------------------------------------
-// UART0_Init
+// UART1_Init
 //-----------------------------------------------------------------------------
 //
-// Configure the UART0 using Timer1, for <baudrate> and 8-N-1.
+// Configure the UART1 using Timer1, for <baudrate> and 8-N-1.
 //
-void UART0_Init (void)
+void UART1_Init (void)
 {
    SCON1   = 0x50;                     // SCON0: mode 1, 8-bit UART, enable RX
    TMOD    = 0x20;                     // TMOD: timer 1, mode 2, 8-bit reload
