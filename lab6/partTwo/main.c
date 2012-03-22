@@ -10,7 +10,7 @@
 
 unsigned char in_char = 'a'; //inbyte
 unsigned char status = 0x00; //holds status register info
-sbit flip = P1^0; //flip bit
+sbit rReady = P1^0; //flip bit
 
 void main(void){
  
@@ -21,10 +21,12 @@ void main(void){
   XBR0 = 0x00;                     // Route UART to GPIO
   XBR1 = 0x00;
   XBR2 = 0xC4;                     // Enable crossbar
-  P1MDOUT = 0x01;                  //1.0 is push pull to show on the scope
+  P1MDOUT = 0x00;                  //1.0 is open drain
   EIE2 = 0x40;                     //enable interrupts from UART1
   IE = 0x80; //enable interrupts globally
-
+  
+  
+  
   while(1)
   {
     flip = ~flip; //FLIP ALL THE BITS!!!
