@@ -8,9 +8,10 @@
 
 
 
-unsigned char in_char = 'a'; //inbyte
+unsigned char in_char = 'i'; //inbyte
+unsigned char out_char = 'o'; //outbyte
 unsigned char status = 0x00; //holds status register info
-sbit rReady = P1^0; //flip bit
+sbit rReady = P1^0; //receiver ready line
 
 void main(void){
  
@@ -24,12 +25,22 @@ void main(void){
   P1MDOUT = 0x00;                  //1.0 is open drain
   EIE2 = 0x40;                     //enable interrupts from UART1
   IE = 0x80; //enable interrupts globally
+  rReady = 0x01; //set the bit high so that it acts as an input
   
-  
-  
+
+  unsigned char chaReady = 0x00; //flag to store a character
+  unsigned int bufferPointer = 0x00; //pointer to places in the buffer
+  unsigned char buffer[64]; //character buffer
   while(1)
   {
-    flip = ~flip; //FLIP ALL THE BITS!!!
+    if(chaReady = 0x01)
+    {
+      
+    
+  
+  
+  
+  
   }
     
 }; //main    
@@ -46,7 +57,7 @@ void isr_uart1(void) interrupt 20 {
   
   if(status == 0x02) //TX1 set
   {
-    SBUF1 = in_char; //place data in the transmit buffer
+    SBUF1 = out_char; //place data in the transmit buffer
     SCON1 = 0x50; //clear TI1
   }
 
