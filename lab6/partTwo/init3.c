@@ -52,13 +52,13 @@ void SYSCLK_Init (void)
 //
 void UART1_Init (void)
 {
-   SCON1   = 0x50;                     // SCON0: mode 1, 8-bit UART, enable RX
+   SCON1   = 0x50;                     // SCON1: mode 1, 8-bit UART, enable RX
    TMOD    = 0x20;                     // TMOD: timer 1, mode 2, 8-bit reload
    TH1    = -(SYSCLK/BAUDRATE/16);     // set Timer1 reload value for baudrate
    TR1    = 1;                         // start Timer1
    CKCON |= 0x10;                      // Timer1 uses SYSCLK as time base
    PCON  |= 0x10;                      // SMOD1 = 1
-   //TI1    = 1;                         // Indicate TX0 ready
+
 }
 
 
