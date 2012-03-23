@@ -17,6 +17,7 @@ unsigned char in_char = 'a'; //inbyte
 unsigned char status = 0x00; //holds status register info
 sbit flip = P1^0; //flip bit
 unsigned char transmit = 0x00; //transmit flag
+unsigned int count;
 
 void main(void){
  
@@ -24,7 +25,7 @@ void main(void){
   WDTCN = 0xad;
   SYSCLK_Init ();                     // initialize oscillator
   UART1_Init ();                      // initialize UART1
-  XBR0 = 0x00;                     // Route UART to GPIO
+  XBR0 = 0x04;                     // Route UART to GPIO
   XBR1 = 0x00;
   XBR2 = 0xC4;                     // Enable crossbar
   P1MDOUT = 0x01;                  //1.0 is push pull to show on the scope
@@ -36,12 +37,13 @@ void main(void){
     flip = ~flip; //FLIP ALL THE BITS!!!
     if(transmit == 0x01) //when we receive a byte, send it back
     {
+      for(count=0;count<50000; count++){} //delay me
       SBUF1 = in_char; //transmit the byte. begins when data is written to the register
       while(transmit == 0x01){} //wait for the transmit to finish (flag cleared in isr)
     }
   }
     
-}; //main    
+} //main    
    
 
 void isr_uart1(void) interrupt 20 {
@@ -54,12 +56,12 @@ void isr_uart1(void) interrupt 20 {
     SCON1 = 0x50; //clear RI1
   }
   
-  if(status == 0x02) //TX1 set
+  if(status == 0x02) //TI1 set
   {
     transmit = 0x00; //clear the need to transmit flag because the xmit is done
     SCON1 = 0x50; //clear TI1
   }
-}; //isr_uart1
+} //isr_uart1
 
 
 
