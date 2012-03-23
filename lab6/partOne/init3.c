@@ -58,7 +58,7 @@ void UART1_Init (void)
    TR1    = 1;                         // start Timer1
    CKCON |= 0x10;                      // Timer1 uses SYSCLK as time base
    PCON  |= 0x10;                      // SMOD1 = 1
-   TI1    = 1;                         // Indicate TX0 ready
+   //SCON1    = 0x52;                         // Indicate TX0 ready
 }
 
 
