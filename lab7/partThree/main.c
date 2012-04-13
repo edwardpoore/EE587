@@ -10,8 +10,11 @@
 #include <stdio.h>
 #include "init3.h"                    // defines for the init functions
 
-unsigned int divider = 1; //global divider variable
-unsigned int counter = 0; //counter to use in clock division
+unsigned int counter = 0;
+unsigned int measure = 0;
+unsigned int time0;
+unsigned int time1;
+unsigned int width = 0;
 
 void main(void){
  
@@ -19,52 +22,49 @@ void main(void){
   WDTCN = 0xad;
   SYSCLK_Init ();                     // initialize oscillator
   UART0_Init ();                      // initialize UART0
-  P74OUT = 0x08; //port 5 high bit is push pull
-  XBR0 = 0x04;                     // Route only uart0
+  XBR0 = 0x14;                     // Route only uart0
   XBR1 = 0x00;
   XBR2 = 0xC0;                     // Enable crossbar without weak pullups
-  P5 = 0x00; //start P5 low
+
+  PCA0CN    = 0x40;
+  PCA0MD    = 0x09;
+  PCA0CPM0 = 0x21; //module 0 catches rising edges
+  PCA0CPM1 = 0x11; //module 1 catches falling edges
   EIE1 = 0x08; //enable CF interrupts
-  IE = 0x90; //enable interrupts globally, UART0
-    
-  while(1); //spin forever
+  IE = 0x80; //enable interrupts globally, UART0
+
+  while(1){}; //spin forever
   
     
 } //main    
    
 
-void isr_uart0(void) interrupt 4 {
-  
-  unsigned int number = 1;
-  printf("Enter a clock divider value between 1 and 65536: ");
-  scanf("%d",&number); //get the number from the user
-  if(number > 0){ //number may not be 0.. cant divide by 0
-    divider = number; //set the clock divider used in the blinking
-    counter = 0; //reset the counter
-    printf("\n");
-  }
-  else{ 
-    printf("\nNumber may NOT be 0\n");
-  }
-  
-  IE = 0x90; //reset the interrupt flag
-} //isr_uart0
-
 void isr_pca(void) interrupt 9 {
-  if(counter == divider){ //if the counter variable has reached the desired counter value
-    counter = 0; //reset the counter
-    if(P5 == 0x00){ //if the LED is off, turn it on
-      P5 = 0x0F0; //set only the high 4 bits of P5
-    }
-    else{ //if the LED is on, or in an error state (not F0 or 00), turn it off
-      P5 = 0x00;
-    }
-  }//if(counter == divider)
-  else{
-    counter = counter++;
-  }
+    float display = 0.0;
 
-  PCA0CN = 0x00; //reset the interrupt flag
+    if(CCF0){
+        time0 = PCA0CPL0 & 0x00FF;
+        time0 = time0 | (PCA0CPH0 << 8);
+        measure = 1;
+    } //module 0
+
+    if(CCF1){
+        if(measure){
+        time1 = PCA0CPL1 & 0x00FF;
+        time1 = time1 | (PCA0CPH1 << 8);
+        width = time1-time0;
+        measure = 0;
+        }
+    } //module 1
+  
+    if(CF){
+        display = width*0.045548654;
+        //printf("%u \n", width);
+        printf("%f microseconds\n",display);
+        }
+
+
+  PCA0CN = 0x40; //reset the interrupt flag
 } //isr_pca
 
 
