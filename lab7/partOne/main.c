@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "init3.h"                    // defines for the init functions
 
-unsigned int divider = 1; //global divider variable
+unsigned int divider = 10; //global divider variable
 unsigned int counter = 0; //counter to use in clock division
 unsigned int number = 10;
 
@@ -31,13 +31,13 @@ void main(void){
 
   
 
-  printf("Enter a clock divider value between 1 and 65536: ");
-  scanf("%d",&number); //get the number from the user
+  printf("Enter a clock divider value between 1 and 65535: ");
+  scanf("%u",&number); //get the number from the user
   if(number > 0){ //number may not be 0.. cant divide by 0
     divider = number; //set the clock divider used in the blinking
     counter = 0; //reset the counter
     printf("\n");
-    printf("I received %d", divider);
+    printf("I received %u", divider);
   }
   else{ 
     printf("\nNumber may NOT be 0\n");
